@@ -1,0 +1,91 @@
+var express = require('express');
+var router = express.Router();
+var fs = require("fs")
+var multer = require("multer")
+var storage = multer.diskStorage({
+    destination:"./images/products",
+    filename:function (req, file, cb) {
+        var productId = req.body.productId;
+        var businessId = req.signedCookies.businessAuth.businessId
+        _filename = businessId+"_"+productId+".jpg";
+        cb(null, _filename)
+
+
+    }
+})
+var businessDb = require('../modules/dbOps/businessDbOps')
+var productsDb = require('../modules/dbOps/productDbObs')
+var cookieMgr = require('../modules/cookieManager.js')
+
+router.get('/login', function (req, res, next) {
+
+    res.render('businessLogin',{})
+})
+router.post("/join", function (req, res, next) {
+    var businessId = req.body.businessId;
+    var businessName = req.body.businessName;
+    var category = req.body.category;
+    var password = req.body.password;
+    var email = req.body.email;
+    var description = req.body.description
+    businessDb.authJoin(businessId,businessName,description,category,password,email,function (msg) {
+        if(msg.code===100){
+            cookieMgr.set(res,"businessAuth",{businessId:businessId},600000000,function () {
+                res.send(msg)
+            })
+        }else {
+            res.send(msg)
+        }
+    })
+
+})
+router.post('/login', function (req, res, next) {
+    var businessId = req.body.businessId
+    var password = req.body.password
+    console.log(password,businessId,req.body)
+    businessDb.authLogin(businessId,password,function (msg) {
+        if(msg.success){
+            cookieMgr.set(res,"businessAuth",{businessId:businessId},600000000,function () {
+                res.send(msg)
+            })
+        }else {
+            console.log(msg)
+            res.send(msg)
+        }
+    })
+
+
+})
+
+router.get('/dashboard', function (req, res, next) {
+    var token = req.signedCookies
+    if (token===undefined){
+        res.redirect("login")
+    }else {
+        //finish up here
+
+        res.render("dashboard",{})
+    }
+
+})
+router.get('/top',function (req, res, n) {
+    businessDb.getTopBrands(function (msg) {
+        res.send(msg)
+    })
+})
+router.get('/logo', function (req, res, next) {
+    var businessId = req.query.businessId+".jpg"
+    const path = __dirname.replace("routes","pictures\\\\"+businessId);
+
+    if (fs.existsSync(path)){
+        //    send file
+        res.sendFile(path)
+    }else {
+        const path = __dirname.replace("routes","public\\images\\business_logo_default.png");
+        res.sendFile(path)
+    }
+})
+
+
+
+module.exports = router;
