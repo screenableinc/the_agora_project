@@ -52,11 +52,12 @@ function attachListeners() {
         })
     })
     $("#actualLoginForm").on("submit", function (e) {
+
         e.preventDefault()
         $.ajax({
             url: "/business/login",
             type: "POST",
-            data: {businessId: $("#businessId").val(), password: $("#password").val()},
+            data: {businessId: $("#loginBId").val(), password: $("#loginBpassword").val()},
             success: function (msg) {
                 if (msg.code === 100) {
                     window.location.replace("/business/dashboard");
@@ -66,6 +67,7 @@ function attachListeners() {
 
             }
         })
+        return false
     })
 }
 getCategories()

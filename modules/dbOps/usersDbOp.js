@@ -1,14 +1,15 @@
 var connection = require('../dbOps/db.js')
-
+var config = require('../CONFIG')
+var genericQueries = require('../dbOps/genericQueries.js');
 function userExists(username, phoneNumber, emailAddress,callback){
     var sql  = "SELECT * from agorans WHERE username = '"+ username +"' OR phoneNumber = '"+ phoneNumber +"' " +
         "OR emailAddress ='"+ emailAddress +"'"
     connection.query(sql, function (err, result) {
         if (err) throw err;
         if (result.length===0){
-            return callback({exists: false})
+            return callback(false)
         }else {
-            return callback({exists: true})
+            return callback(true)
         }
     })
 }
@@ -31,14 +32,14 @@ function authJoin(username, emailAddress, phoneNumber,password,fullName,countryC
     userExists(username, phoneNumber,emailAddress, function (exists) {
             if(exists){
                 //furher specifiy which params are bad
-                return {success:false, code:403}
+                return callback({success:false, code:403})
             }else {
             //    join
                 var sql = "INSERT into agorans (username, emailAddress, phoneNumber, password,fullName, " +
                     "" +
                     "countryCode) VALUES (?)"
                 var values = [username, emailAddress,phoneNumber,password,fullName,countryCode]
-                connection.query(sql,values,function (err, result) {
+                connection.query(sql,[values],function (err, result) {
                     if(err){
                      return callback({success:false, code:500, response:err})
                     }
@@ -50,20 +51,37 @@ function authJoin(username, emailAddress, phoneNumber,password,fullName,countryC
         }
     )
 }
-function getCart(username, callback) {
-    var sql = "SELECT * FROM orders WHERE ownerId = '"+ username +"'";
-    connection.query(sql, function (err, result) {
+function addToCart(username,productId,callback) {
+    var sql = "INSERT INTO cart (productId,username) VALUES (?)"
+    var values =[[productId,username]]
+    connection.query(sql,values,function (err,result) {
         if(err){
-            return callback({success:false, code:500, response:err})
+            return callback({success:false,response:err,code:500})
         }else {
-            return callback({success:true, code:200, response:result})
+            return callback({success:true,code:200})
         }
     })
+}
+function getCart(username, callback) {
+    var sql = "SELECT * FROM cart JOIN products ON products.productId = cart.productId WHERE username = "+ JSON.stringify(username) +" ";
+    connection.query(sql,function (err, result) {
+        if(err){
+            return callback({success:false,code:500})
+        }else {
+            return callback({success:true, response:result,code:200})
+        }
+    })
+    // genericQueries.select("*",config.STNs.cart,"username",JSON.stringify(username),function (msg) {
+    //     return callback(msg)
+    // })
+
 }
 function store_picture() {
 //cdn
 }
 module.exports = {
-    authLogin:authLogin,authJoin:authJoin
+    authLogin:authLogin,authJoin:authJoin,
+    addToCart:addToCart,getCart:getCart
+
 }
 

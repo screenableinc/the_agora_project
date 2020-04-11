@@ -2,7 +2,14 @@ var connection = require('../dbOps/db.js')
 var genericQueries = require('../dbOps/genericQueries.js');
 var config = require('../CONFIG')
 
+function getBusiness(vendorId,callback) {
+    genericQueries.select("*",config.STNs.vendors,"businessId",JSON.stringify(vendorId),function (msg) {
+        return callback(msg)
+    })
+}
+
 function authLogin(businessId,password, callback) {
+    console.log(businessId,password)
     var sql  = "SELECT * from businesses WHERE businessId ='"+ businessId +"' AND password ='"+ password +"'"
     connection.query(sql, function (err, result) {
         if (err){
@@ -30,7 +37,7 @@ function authJoin(businessId, businessName, description, mainCategory, password,
     })
 }
 function getTopBrands(callback){
-    var sql  =  "SELECT * FROM orders GROUP BY vendorId ORDER BY SUM (quantity) DESC LIMIT 6"
+    var sql  =  "SELECT * FROM orders JOIN businesses ON businesses.businessId = orders.vendorId GROUP BY vendorId ORDER BY SUM (quantity) DESC LIMIT 6"
     connection.query(sql, function (err, result) {
         if(err){
             console.log(err)
@@ -44,5 +51,6 @@ function getTopBrands(callback){
 module.exports={
     authLogin:authLogin,
     authJoin:authJoin,
-    getTopBrands:getTopBrands
+    getTopBrands:getTopBrands,
+    getBusiness:getBusiness
 }

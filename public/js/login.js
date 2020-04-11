@@ -29,6 +29,17 @@ $("#signUpForm").on("submit",function (e) {
         type:"POST",
         url:"/users/join",
         data: $("#signUpForm").serializeArray(),
+        success:function (msg) {
+            if(msg.code===100){
+            //    continue to home
+                window.location.replace("/")
+
+            }else {
+                // err which field
+
+                alert("Something went wrong, Try again")
+            }
+        }
 
     })
 

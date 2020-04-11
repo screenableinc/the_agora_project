@@ -814,6 +814,7 @@ ol {
 }
 
 .product-item .pi-pic {
+
 	position: relative;
 	display: block;
 }
@@ -885,7 +886,7 @@ ol {
 	font-weight: bold;
 	text-transform: uppercase;
 	position: absolute;
-	right: 19px;
+	right: 15px;
 	top: 20px;
 	opacity: 0;
 }
@@ -2417,4 +2418,17 @@ ol {
 	.social-links a span {
 		display: none;
 	}
+}
+.banner{
+
+	background: url("/images/banner_ex2.jpg") no-repeat center center;
+	-webkit-background-size: cover;
+	-moz-background-size: cover;
+	-ms-background-size: cover;
+	-o-background-size: cover;
+	background-size: cover;
+	text-align: center;
+	background-attachment: fixed;
+	padding: 70px 0px;
+	position: relative;
 }

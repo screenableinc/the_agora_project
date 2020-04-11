@@ -1,5 +1,7 @@
 @import url('https://fonts.googleapis.com/css?family=Montserrat:400,800');
+html{
 
+}
 * {
     box-sizing: border-box;
 }
@@ -13,6 +15,16 @@ body {
     font-family: 'Montserrat', sans-serif;
     height: 100vh;
     margin: -20px 0 50px;
+    background-image: url("/images/login.jpg");
+    background-size: cover; /* or contain depending on what you want */
+    background-position: center center;
+    background-repeat: no-repeat;
+    text-align:center;
+    margin:auto;
+    padding:0;
+
+
+    /*background-position: center;*/
 }
 
 h1 {

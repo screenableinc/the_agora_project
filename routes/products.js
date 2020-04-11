@@ -32,13 +32,31 @@ var storage = multer.diskStorage({
 })
 var upload = multer({storage:storage})
 
+router.get('/product', function (req, res, next) {
+    var productId = req.query.productId;
+    productsDb.getProduct(productId,function (msg) {
+        if(msg.code===200){
+            var product = msg.response[0]
+            res.render("product",{imageurl:"/products/images?productId="+productId, name:product.productName
+            ,price:product.price,description:product.description})
 
+        }else {
+            res.redirect("/")
+        }
+    })
+})
 router.get('/categories/all',function (req, res, next) {
     productsDb.getCategories(function (msg) {
 
         res.send(msg)
     })
 });
+
+router.get('/latest',function (req, res, next) {
+    productsDb.getLatestProducts(function (msg) {
+        res.send(msg)
+    })
+})
 
 router.get('/all',function (req, res, next) {
     var cookie = req.signedCookies
@@ -47,21 +65,21 @@ router.get('/all',function (req, res, next) {
     }else {
 
         productsDb.getProducts(cookie.businessAuth.businessId, function (msg) {
-            console.log("here")
+
             res.send(msg)
         })
     }
 });
 
 router.post('/additem', upload.single("image"),async function (req, res, next) {
-    console.log("okay in fun")
+
     var cookie = req.signedCookies
     var productId = req.body.productId;var descr = req.body.description;var categoryId = req.body.category;
     var price = req.body.price;
     var quantity = req.body.quantity;var barcode = req.body.barcode;
     var productName = req.body.productName
     var deliverable = parseInt(req.body.deliverable);
-    console.log(req.file)
+
 
 
     if(cookie===undefined){
@@ -70,10 +88,35 @@ router.post('/additem', upload.single("image"),async function (req, res, next) {
         var businessId = cookie.businessAuth.businessId
         productId = productId+"_"+businessId
         productsDb.addProduct(businessId,productId,descr,price,deliverable,quantity,barcode, categoryId,productName,function (msg) {
-            console.log(msg)
+
             res.send(msg)
         })
     }
+})
+router.get("/images", function (req, res, next) {
+    var productId = req.query.productId;
+
+    productsDb.getImageIdentifier(productId, function (msg) {
+
+        if(!msg.success){
+        //    send generic pic
+            const path = __dirname.replace("routes","images\\products\\default.jpg");
+            res.sendFile(path)
+        }else {
+            var imagename =  msg.response[0].identifier+".jpg"
+
+
+            const path = __dirname.replace("routes","images\\products\\"+imagename);
+
+            if (fs.existsSync(path)){
+                //    send file
+                res.sendFile(path)
+            }else {
+                const path = __dirname.replace("routes","images\\products\\default.jpg");
+                res.sendFile(path)
+            }
+        }
+    })
 })
 
 

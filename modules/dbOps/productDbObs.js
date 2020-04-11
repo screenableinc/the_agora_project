@@ -26,6 +26,21 @@ function addProduct(businessId, productId,description, price, deliverable,quanti
         }
     })
 }
+function addToCart(username,productId,callback) {
+    var sql = "INSERT INTO cart (productId, username) VALUES (?)"
+    var values = [[productId,username,quantity]]
+    connection.query(sql,values,function (err, result) {
+        if(err){
+            return callback({success:false,code:200})
+        }else {
+            return callback({success:true,code:200})
+        }
+    })
+}
+
+function orderItems(ownerId,items,callback){
+
+}
 function addProductImageIdentifier(identifier,productId,callback) {
     var sql = "INSERT INTO product_images (productId, identifier) VALUES (?)"
     connection.query(sql, [[productId,identifier]],function (err,result) {
@@ -36,6 +51,21 @@ function addProductImageIdentifier(identifier,productId,callback) {
         }
     })
 }
+function getImageIdentifier(productId, callback) {
+    var sql = "SELECT identifier FROM product_images WHERE productId = '"+ productId +"'"
+    genericQueries.select("identifier",config.STNs.product_images,"productId",JSON.stringify(productId),function (msg) {
+        return callback(msg)
+    })
+    connection.query(sql)
+}
+
+function getProduct(productId, callback) {
+    genericQueries.select("*",config.STNs.products,"productId",JSON.stringify(productId),function (msg) {
+        return callback(msg)
+    })
+}
+
+//from vendor
 function getProducts(vendorId,callback){
 
 
@@ -71,5 +101,8 @@ module.exports = {
     getProducts:getProducts,
     addProductImageIdentifier:addProductImageIdentifier,
     getTopProducts:getTopProducts,
-    getLatestProducts:getLatestProducts
+    getLatestProducts:getLatestProducts,
+    getImageIdentifier:getImageIdentifier,
+    getProduct:getProduct,
+    addToCart:addToCart
 }

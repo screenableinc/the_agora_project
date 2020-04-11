@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var fs = require("fs")
 var multer = require("multer")
+var config = require("../modules/CONFIG")
 var storage = multer.diskStorage({
     destination:"./images/products",
     filename:function (req, file, cb) {
@@ -15,8 +16,28 @@ var storage = multer.diskStorage({
 })
 var businessDb = require('../modules/dbOps/businessDbOps')
 var productsDb = require('../modules/dbOps/productDbObs')
+var genericDb = require('../modules/dbOps/genericQueries')
 var cookieMgr = require('../modules/cookieManager.js')
 
+router.get("/",function (req, res, next) {
+    var businessId = req.query.vendorId
+    businessDb.getBusiness(businessId,function (msg) {
+
+        if(msg.code===200) {
+            res.render('store', {businessName:msg.response[0].businessName,businessId:businessId})
+        }else {
+            res.send("okay")
+            // res.redirect("/")
+        }
+    })
+
+})
+router.get("/products",function (req, res,next) {
+    var businessId = req.query.businessId
+    productsDb.getProducts(businessId,function (msg) {
+        res.send(msg)
+    })
+})
 router.get('/login', function (req, res, next) {
 
     res.render('businessLogin',{})
@@ -42,7 +63,8 @@ router.post("/join", function (req, res, next) {
 router.post('/login', function (req, res, next) {
     var businessId = req.body.businessId
     var password = req.body.password
-    console.log(password,businessId,req.body)
+    console.log(req.body)
+
     businessDb.authLogin(businessId,password,function (msg) {
         if(msg.success){
             cookieMgr.set(res,"businessAuth",{businessId:businessId},600000000,function () {
@@ -63,8 +85,18 @@ router.get('/dashboard', function (req, res, next) {
         res.redirect("login")
     }else {
         //finish up here
+        var businessId = token[config.gvs.businessAuthTokenName].businessId;
+        businessDb.getBusiness(businessId,function (msg) {
+            if(msg.code===200){
+                var response = msg.response[0]
+                res.render("dashboard",{businessName:response.businessName})
 
-        res.render("dashboard",{})
+            }else {
+                res.redirect("login")
+            }
+        })
+
+
     }
 
 })
@@ -82,6 +114,30 @@ router.get('/logo', function (req, res, next) {
         res.sendFile(path)
     }else {
         const path = __dirname.replace("routes","public\\images\\business_logo_default.png");
+        res.sendFile(path)
+    }
+})
+router.post('/logo', function (req, res, next) {
+    var businessId = req.body.businessId+".jpg"
+    const path = __dirname.replace("routes","pictures\\\\"+businessId);
+
+    if (fs.existsSync(path)){
+        //    send file
+        res.sendFile(path)
+    }else {
+        const path = __dirname.replace("routes","public\\images\\business_logo_default.png");
+        res.sendFile(path)
+    }
+})
+router.get('/banner',function (req, res, next) {
+    var businessId = req.query.businessId+".jpg"
+    const path = __dirname.replace("routes","images\\banners\\"+businessId);
+
+    if (fs.existsSync(path)){
+        //    send file
+        res.sendFile(path)
+    }else {
+        const path = __dirname.replace("routes","public\\images\\businessLogoBanner.jpg");
         res.sendFile(path)
     }
 })

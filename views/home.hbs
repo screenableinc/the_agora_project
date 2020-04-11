@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <html lang="zxx">
 <head>
-	<title>The agora initiative | eCommerce Template</title>
+	<title>The agora initiative</title>
 	<meta charset="UTF-8">
-	<meta name="description" content=" Divisima | eCommerce Template">
-	<meta name="keywords" content="divisima, eCommerce, creative, html">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 	<!-- Favicon -->
 	<link href="img/favicon.ico" rel="shortcut icon"/>
 
@@ -22,6 +20,11 @@
 	<link rel="stylesheet" href="stylesheets/owl.carousel.min.css"/>
 	<link rel="stylesheet" href="stylesheets/animate.css"/>
 	<link rel="stylesheet" href="stylesheets/visma.css"/>
+    <link rel="stylesheet" href="stylesheets/m_responsive.css"/>
+    <link rel="stylesheet" href="stylesheets/m_style.css"/>
+    <link rel="stylesheet" href="stylesheets/ui.css"/>
+    <link rel="stylesheet" href="stylesheets/prettyPhoto.css"/>
+    <link rel="stylesheet" href="stylesheets/spinner.css"/>
 
 
 	<!--[if lt IE 9]>
@@ -57,12 +60,13 @@
 						<div class="user-panel">
 							<div class="up-item">
 								<i class="flaticon-profile"></i>
-								<a href="#">Sign</a> In or <a href="#">Create Account</a>
+                                <span><a href="#">{{userId}}</a></span>
+								<a href="/users/login" style="display: {{displayNone}}">Sign In</a>
 							</div>
 							<div class="up-item">
 								<div class="shopping-card">
 									<i class="flaticon-bag"></i>
-									<span>0</span>
+									<span id="cartItemCount">0</span>
 								</div>
 								<a href="#">Shopping Cart</a>
 							</div>
@@ -71,39 +75,169 @@
 				</div>
 			</div>
 		</div>
-		<nav class="main-navbar">
-			<div class="container">
-				<!-- menu -->
-				<ul class="main-menu">
-					<li><a href="#">Home</a></li>
-					<li><a href="#">Women</a></li>
-					<li><a href="#">Men</a></li>
-					<li><a href="#">Jewelry
-						<span class="new">New</span>
-					</a></li>
-					<li><a href="#">Shoes</a>
-						<ul class="sub-menu">
-							<li><a href="#">Sneakers</a></li>
-							<li><a href="#">Sandals</a></li>
-							<li><a href="#">Formal Shoes</a></li>
-							<li><a href="#">Boots</a></li>
-							<li><a href="#">Flip Flops</a></li>
-						</ul>
-					</li>
-					<li><a href="#">Pages</a>
-						<ul class="sub-menu">
-							<li><a href="./product.html">Product Page</a></li>
-							<li><a href="./category.html">Category Page</a></li>
-							<li><a href="./cart.html">Cart Page</a></li>
-							<li><a href="./checkout.html">Checkout Page</a></li>
-							<li><a href="./contact.html">Contact Page</a></li>
-						</ul>
-					</li>
-					<li><a href="#">Blog</a></li>
-				</ul>
-			</div>
-		</nav>
-	</header>
+
+        <div id="cat-nav">
+            <div class="container">
+                <nav class="navbar navbar-default">
+                    <!-- <div class="container-fluid"> -->
+                    <!-- Brand and toggle get grouped for better mobile display -->
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#cat-nav-mega" aria-expanded="false">
+                            <span class="sr-only">Toggle navigation</span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                    </div>
+
+                    <!-- Collect the nav links, forms, and other content for toggling -->
+                    <div class="navbar-collapse collapse" id="cat-nav-mega" aria-expanded="false" style="height: 0px;">
+                        <ul class="nav navbar-nav">
+                            <li class="active"><a href="index.html">ELECTRONICS</a></li>
+                            <li class="dropdown menu-large">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">MEN <i class="fa fa-angle-down"></i></a>
+                                <ul class="dropdown-menu megamenu" role="menu">
+                                    <li>
+                                        <div class="">
+                                            <div class="mega-sub">
+                                                <div class="mega-sub-title">All Clothing</div>
+                                                <ul>
+                                                    <li><a href="">T-Shirts</a></li>
+                                                    <li><a href="">Casual &amp; Party Wear Shirts</a></li>
+                                                    <li><a href="">Jeans</a></li>
+                                                    <li><a href="">Formal Shirts</a></li>
+                                                    <li><a href="">Cargos, Shorts &amp; 3/4ths</a></li>
+                                                    <li><a href="">Sports Wear</a></li>
+                                                    <li><a href="">Trousers</a></li>
+                                                    <li><a href="">Suits and Blazers</a></li>
+                                                    <li><a href="">Ethnic Wear</a></li>
+                                                    <li><a href="">Inner &amp; Sleep Wear</a></li>
+                                                    <li><a href="">Accessories</a></li>
+                                                </ul>
+                                            </div>
+                                            <div class="mega-sub">
+                                                <div class="mega-sub-title">All Footwear</div>
+                                                <ul>
+                                                    <li><a href="">Flats</a></li>
+                                                    <li><a href="">Heels</a></li>
+                                                    <li><a href="">Bellies</a></li>
+                                                    <li><a href="">Wedges</a></li>
+                                                    <li><a href="">Slippers &amp; Flip- Flop's</a></li>
+                                                    <li><a href="">Sports Shoes</a></li>
+                                                    <li><a href="">Sports Sandals</a></li>
+                                                    <li><a href="">Casual Shoes</a></li>
+                                                    <li><a href="">Formal Shoes</a></li>
+                                                    <li><a href="">Ethnic</a></li>
+                                                    <li><a href="">Boots</a></li>
+                                                </ul>
+                                            </div>
+                                            <div class="mega-product">
+                                                <div class="mega-sub-title">Featured products</div>
+                                                <div class="row">
+                                                    <div class="col-md-6 prdct-grid">
+                                                        <div class="product-fade">
+                                                            <div class="product-fade-wrap">
+                                                                <div id="product-image10" class="owl-carousel owl-theme" style="opacity: 0; display: block;">
+                                                                    <div class="owl-wrapper-outer"><div class="owl-wrapper" style="width: 1000px; left: 0px; display: block; transition: all 0ms ease 0s; transform: translate3d(0px, 0px, 0px);"><div class="owl-item" style="width: 100px;"><div class="item"><img src="images/p-9.jpg" alt="" class="img-responsive"></div></div><div class="owl-item" style="width: 100px;"><div class="item"><img src="images/p-3.jpg" alt="" class="img-responsive"></div></div><div class="owl-item" style="width: 100px;"><div class="item"><img src="images/p-4.jpg" alt="" class="img-responsive"></div></div><div class="owl-item" style="width: 100px;"><div class="item"><img src="images/p-5.jpg" alt="" class="img-responsive"></div></div><div class="owl-item" style="width: 100px;"><div class="item"><img src="images/p-2.jpg" alt="" class="img-responsive"></div></div></div></div>
+
+
+
+
+                                                                </div>
+                                                                <div class="product-fade-ct">
+                                                                    <div class="product-fade-control">
+                                                                        <div class="to-left">
+                                                                            <a href=""><i class="fa fa-heart"></i></a>
+                                                                            <a href=""><i class="fa fa-retweet"></i></a>
+                                                                            <a href=""><i class="fa fa-search"></i></a>
+                                                                        </div>
+                                                                        <div class="to-right">
+                                                                            <div id="product-control10" class="owl-carousel owl-theme" style="opacity: 1; display: block;">
+                                                                                <div class="owl-wrapper-outer"><div class="owl-wrapper" style="width: 96px; left: 0px; display: block; transition: all 200ms ease 0s; transform: translate3d(0px, 0px, 0px);"><div class="owl-item synced" style="width: 12px;"><div class="item"><div class="bullets"></div></div></div><div class="owl-item" style="width: 12px;"><div class="item"><div class="bullets"></div></div></div><div class="owl-item" style="width: 12px;"><div class="item"><div class="bullets"></div></div></div><div class="owl-item" style="width: 12px;"><div class="item"><div class="bullets"></div></div></div></div></div>
+
+
+
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="clearfix"></div>
+                                                                        <a href="" class="btn btn-to-cart"><span class="bag"></span><span>Add To cart</span><div class="clearfix"></div></a>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="product-name">
+                                                            Striped Men's Round Neck T-Shirt
+                                                        </div>
+                                                        <div class="star-1" title="regular"><img alt="1" src="images/star-on.png" title="regular">&nbsp;<img alt="2" src="images/star-on.png" title="regular">&nbsp;<img alt="3" src="images/star-on.png" title="regular">&nbsp;<img alt="4" src="images/star-off.png" title="regular">&nbsp;<img alt="5" src="images/star-off.png" title="regular"><input name="score" type="hidden" value="3" readonly=""></div>
+                                                        <div class="product-price">
+                                                            <span>$19.00</span> $15.00
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6 prdct-grid">
+                                                        <div class="product-fade">
+                                                            <div class="product-fade-wrap">
+                                                                <div id="product-image11" class="owl-carousel owl-theme" style="opacity: 0; display: block;">
+                                                                    <div class="owl-wrapper-outer"><div class="owl-wrapper" style="width: 1000px; left: 0px; display: block; transition: all 0ms ease 0s; transform: translate3d(0px, 0px, 0px);"><div class="owl-item" style="width: 100px;"><div class="item"><img src="images/p-1.jpg" alt="" class="img-responsive"></div></div><div class="owl-item" style="width: 100px;"><div class="item"><img src="images/p-3.jpg" alt="" class="img-responsive"></div></div><div class="owl-item" style="width: 100px;"><div class="item"><img src="images/p-4.jpg" alt="" class="img-responsive"></div></div><div class="owl-item" style="width: 100px;"><div class="item"><img src="images/p-5.jpg" alt="" class="img-responsive"></div></div><div class="owl-item" style="width: 100px;"><div class="item"><img src="images/p-1.jpg" alt="" class="img-responsive"></div></div></div></div>
+
+
+
+
+                                                                </div>
+                                                                <div class="product-fade-ct">
+                                                                    <div class="product-fade-control">
+                                                                        <div class="to-left">
+                                                                            <a href=""><i class="fa fa-heart"></i></a>
+                                                                            <a href=""><i class="fa fa-retweet"></i></a>
+                                                                            <a href=""><i class="fa fa-search"></i></a>
+                                                                        </div>
+                                                                        <div class="to-right">
+                                                                            <div id="product-control11" class="owl-carousel owl-theme" style="opacity: 1; display: block;">
+                                                                                <div class="owl-wrapper-outer"><div class="owl-wrapper" style="width: 96px; left: 0px; display: block; transition: all 200ms ease 0s; transform: translate3d(0px, 0px, 0px);"><div class="owl-item synced" style="width: 12px;"><div class="item"><div class="bullets"></div></div></div><div class="owl-item" style="width: 12px;"><div class="item"><div class="bullets"></div></div></div><div class="owl-item" style="width: 12px;"><div class="item"><div class="bullets"></div></div></div><div class="owl-item" style="width: 12px;"><div class="item"><div class="bullets"></div></div></div></div></div>
+
+
+
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="clearfix"></div>
+                                                                        <a href="" class="btn btn-to-cart"><span class="bag"></span><span>Add To cart</span><div class="clearfix"></div></a>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="product-name">
+                                                            Striped Men's Round Neck T-Shirt
+                                                        </div>
+                                                        <div class="star-1" title="regular"><img alt="1" src="images/star-on.png" title="regular">&nbsp;<img alt="2" src="images/star-on.png" title="regular">&nbsp;<img alt="3" src="images/star-on.png" title="regular">&nbsp;<img alt="4" src="images/star-off.png" title="regular">&nbsp;<img alt="5" src="images/star-off.png" title="regular"><input name="score" type="hidden" value="3" readonly=""></div>
+                                                        <div class="product-price">
+                                                            <span>$19.00</span> $15.00
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="mega-offers">
+                                                <a href=""><img src="images/mega-offers.jpg" class="img-responsive" alt=""></a>
+                                            </div>
+                                            <div class="clearfix"></div>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li><a href="blog.html">WOMEN </a></li>
+                            <li><a href="contact.html">BABY &amp; KIDS </a></li>
+                            <li><a href="contact.html">BOOKS &amp; MEDIA </a></li>
+                            <li><a href="contact.html">HOME &amp; KITCHEN </a></li>
+                            <li><a href="contact.html">MORE STORES </a></li>
+                            <li><a href="contact.html">OFFERS ZONE </a></li>
+                            <li class="cat-img-off"><img src="images/offers.png" alt="off"></li>
+                        </ul>
+
+                    </div><!-- /.navbar-collapse -->
+                    <!--</div> -->
+                </nav>
+            </div>
+        </div>
+    </header>
+
 	<!-- Header section end -->
 
 
@@ -166,9 +300,7 @@
                 <h2>Top Brands</h2>
             </div>
             <div class="product-slider owl-carousel" id="topBrands">
-               <div class="product-item">
-                   <h3>Nothing here</h3>
-               </div>
+
             </div>
         </div>
     </section>
@@ -178,73 +310,10 @@
 			<div class="section-title">
 				<h2>LATEST PRODUCTS</h2>
 			</div>
-			<div class="product-slider owl-carousel">
-				<div class="product-item">
-					<div class="pi-pic">
-						<img src="./img/product/1.jpg" alt="">
-						<div class="pi-links">
-							<a href="#" class="add-card"><i class="flaticon-bag"></i><span>ADD TO CART</span></a>
-							<a href="#" class="wishlist-btn"><i class="flaticon-heart"></i></a>
-						</div>
-					</div>
-					<div class="pi-text">
-						<h6>$35,00</h6>
-						<p>Flamboyant Pink Top </p>
-					</div>
-				</div>
-				<div class="product-item">
-					<div class="pi-pic">
-						<div class="tag-new">New</div>
-						<img src="./img/product/2.jpg" alt="">
-						<div class="pi-links">
-							<a href="#" class="add-card"><i class="flaticon-bag"></i><span>ADD TO CART</span></a>
-							<a href="#" class="wishlist-btn"><i class="flaticon-heart"></i></a>
-						</div>
-					</div>
-					<div class="pi-text">
-						<h6>$35,00</h6>
-						<p>Black and White Stripes Dress</p>
-					</div>
-				</div>
-				<div class="product-item">
-					<div class="pi-pic">
-						<img src="./img/product/3.jpg" alt="">
-						<div class="pi-links">
-							<a href="#" class="add-card"><i class="flaticon-bag"></i><span>ADD TO CART</span></a>
-							<a href="#" class="wishlist-btn"><i class="flaticon-heart"></i></a>
-						</div>
-					</div>
-					<div class="pi-text">
-						<h6>$35,00</h6>
-						<p>Flamboyant Pink Top </p>
-					</div>
-				</div>
-				<div class="product-item">
-						<div class="pi-pic">
-							<img src="./img/product/4.jpg" alt="">
-							<div class="pi-links">
-								<a href="#" class="add-card"><i class="flaticon-bag"></i><span>ADD TO CART</span></a>
-								<a href="#" class="wishlist-btn"><i class="flaticon-heart"></i></a>
-							</div>
-						</div>
-						<div class="pi-text">
-							<h6>$35,00</h6>
-							<p>Flamboyant Pink Top </p>
-						</div>
-					</div>
-				<div class="product-item">
-						<div class="pi-pic">
-							<img src="./img/product/6.jpg" alt="">
-							<div class="pi-links">
-								<a href="#" class="add-card"><i class="flaticon-bag"></i><span>ADD TO CART</span></a>
-								<a href="#" class="wishlist-btn"><i class="flaticon-heart"></i></a>
-							</div>
-						</div>
-						<div class="pi-text">
-							<h6>$35,00</h6>
-							<p>Flamboyant Pink Top </p>
-						</div>
-					</div>
+			<div class="product-slider owl-carousel" id="latestProducts">
+				<div class="product-item" >
+                    <h3>Nothing yet</h3>
+                </div>
 			</div>
 		</div>
 	</section>
@@ -505,7 +574,7 @@
 					<a href="" class="tumblr"><i class="fa fa-tumblr-square"></i><span>tumblr</span></a>
 				</div>
 
-<!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. --> 
+<!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
 <p class="text-white text-center mt-5">Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved | This template is made with <i class="fa fa-heart-o" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank">Colorlib</a></p>
 <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
 
@@ -519,12 +588,16 @@
 	<!--====== Javascripts & Jquery ======-->
 	<script src="js/jquery-3.2.1.min.js"></script>
 	<script src="js/bootstrap.min.js"></script>
+
 	<script src="js/jquery.slicknav.min.js"></script>
 	<script src="js/owl.carousel.min.js"></script>
 	<script src="js/jquery.nicescroll.min.js"></script>
 	<script src="js/jquery.zoom.min.js"></script>
 	<script src="js/jquery-ui.min.js"></script>
-	<script src="js/main.js"></script>
+
+    <script src="js/templateBuilders/template.js" type="module"></script>
+    <script src="js/home.js" type="module"></script>
+    <script src="js/main.js"></script>
 
 	</body>
 </html>

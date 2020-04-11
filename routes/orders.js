@@ -1,10 +1,24 @@
 var express = require('express');
 var router = express.Router();
-
-
+var ordersDb = require('../modules/dbOps/ordersDbOp')
+var config = require("../modules/CONFIG")
 router.get('/',function (req, res, next) {
 
 });
+router.post('/order',function (req, res, next) {
+    var details = JSON.parse(req.body.details);
+
+    try {
+        var username = req.signedCookies[config.gvs.userAuthTokenName].username
+        ordersDb.makeOrder(details,function (msg) {
+            res.send(msg)
+        })
+    }catch (e) {
+        throw e;
+    }
+
+
+})
 
 
 

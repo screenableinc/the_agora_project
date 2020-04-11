@@ -15,16 +15,22 @@
 
 <div class="sidebar">
     <div class="container">
-        <img id="logo" src="/business/logo" alt="">
+        <img id="logo" src="/business/logo?businessId={{businessId}}" alt="">
     </div>
     <hr>
     <ul class="sideBarItems">
         <li id="addItems">Add Item</li>
         <li>Account Settings</li>
+        <li>Log out</li>
+        <li id="locationSettings">Location Settings</li>
+
 
     </ul>
 </div>
 <div class="content">
+    <div  style="max-height: 300px;min-height: 255px;text-align: center" class="banner">
+        <h1 style="bottom: -20px;color: white" id="businessName">{{businessName}}</h1>
+    </div>
 <div class="container" rel="items">
     <div class="container">
         <h3>Items for Sale</h3>
@@ -176,10 +182,51 @@
         </div>
     </div>
 </div>
+
+<!--location modal-->
+
+<div id="locationModal" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Select Location</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div style="height: 500px;width: 500px" class="modal-body">
+                <div style="height: 20%" class="row">
+                    <div class="col-sm-6">
+                        <label for="lat">Latitude</label>
+                        <input name="lat" type="text" class="form-control">
+                    </div>
+                    <div class="col-sm-6">
+                        <label for="long">Longitude</label>
+                        <input name="long" type="text" class="form-control">
+                    </div>
+
+                </div>
+                <div style="height: 70%;width:100%" id="map">
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="geoLocate" type="button" class="btn btn-primary">Auto Locate</button>
+                <button id="saveLocation" type="button" class="btn btn-primary">Save changes</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 <!--end modals-->
 <script type="text/javascript" src="/js/jquery-3.2.1.min.js"></script>
 <script src="/js/popper.min.js"></script>
 <script src="/js/bootstrap.min.js"></script>
+<script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD9hUpipwWmIJyWcbpRCRmUDRwD0oZ24g4">
+
+
+</script>
 <script src="/js/business.js"></script>
 <script type="text/javascript" src="/js/datatables.min.js"></script>
 
