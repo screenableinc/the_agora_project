@@ -39,6 +39,15 @@ function entryExists(table,columnKey,columnValue, callback){
         }
     })
 }
+function search(value,callback) {
+    var sql = "SELECT * FROM products WHERE productName LIKE '%"+value+"%'"
+    console.log(sql)
+    connection.query(sql, function (err, result) {
+        if(err)throw err;
+        return callback({success:true, code:200, response:result})
+    })
+}
+
 function addOrEditLocation(id,lat,lng,city,country,callback) {
     entryExists(config.STNs.locations,"vendorId",id,function (msg) {
         console.log(msg)
@@ -77,6 +86,7 @@ function insert(){
 
 module.exports={
     select:select,
-    addOrEditLocation:addOrEditLocation
+    addOrEditLocation:addOrEditLocation,
+    search:search
     // selectAll:selectAll
 }

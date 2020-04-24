@@ -14,9 +14,21 @@ function getCart(username,callback) {
 }
 
 //for vendor
-function getClientOrders(vendorId, callback) {
-    genericQueries.select("*",config.STNs.vendors,"vendorId",vendorId,function (msg) {
-        return callback(msg)
+function getOrders(vendorId, callback) {
+    // genericQueries.select("*",config.STNs.vendors,"vendorId",vendorId,function (msg) {
+    //     return callback(msg)
+    // })
+    // var sql = "SELECT orders.orderId, agorans."
+    var sql = "SELECT agorans.username,phoneNumber, products.price, productName, orders.* FROM orders JOIN products ON products.productId = orders.productId JOIN agorans ON agorans.username" +
+        " = orders.userId"
+    connection.query(sql,function (err, result) {
+        if(err){
+            console.log(err)
+            return callback({code:500,success:false})
+
+        }else {
+            return callback({success:true, code:200, response:result})
+        }
     })
 }
 function makeOrder(details,callback) {
@@ -32,5 +44,6 @@ function makeOrder(details,callback) {
 }
 
 module.exports={
-    makeOrder:makeOrder
+    makeOrder:makeOrder,
+    getOrders:getOrders
 }

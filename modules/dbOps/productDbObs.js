@@ -69,8 +69,16 @@ function getProduct(productId, callback) {
 function getProducts(vendorId,callback){
 
 
-    genericQueries.select("*", config.STNs.products,"vendorId",JSON.stringify(vendorId),function (msg) {
-        return callback(msg)
+    // genericQueries.select("*", config.STNs.products,"vendorId",JSON.stringify(vendorId),function (msg) {
+    //     return callback(msg)
+    // })
+    var sql = "SELECT * FROM products JOIN categories ON categories.categoryId = products.categoryId WHERE vendorId = "+JSON.stringify(vendorId)+" "
+    connection.query(sql,function (err, result) {
+        if(err){
+            throw err;
+        }else {
+            return callback({success:true,code:200,response:result})
+        }
     })
 }
 function getTopProducts(callback){

@@ -19,6 +19,16 @@ router.post('/order',function (req, res, next) {
 
 
 })
+router.get('/all',function (req, res, next) {
+    try {
+        var businessId = req.signedCookies[config.gvs.businessAuthTokenName].businessId;
+        ordersDb.getOrders(businessId,function (msg) {
+            res.send(msg)
+        })
+    }catch (e) {
+        throw e
+    }
+})
 
 
 

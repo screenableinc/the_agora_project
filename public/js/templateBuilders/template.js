@@ -1,3 +1,24 @@
+function price(price) {
+    price=String(parseFloat(String(price)).toFixed(2))
+    var decimals = price.substr(price.length-3)
+    price=price.slice(0, -3);
+    if(price.length >= 4){
+        var textLeft = price
+        var final=""
+        while (textLeft.length>3){
+
+            final = "," +textLeft.substr(textLeft.length-3)+final
+            textLeft = textLeft.slice(0, -3);
+
+
+        }
+        return textLeft+final+decimals
+
+    }else {
+        return price+decimals
+    }
+}
+var productImgPrefix="/products/images?productId="
 
 var cartItem = "<tr rel=''>\n" +
     "<td class='product-col'>\n" +
@@ -46,7 +67,7 @@ var product_template = "<div class=\"product-item\">\n" +
     "                        \n" +
     "                        <img src=\"{{{img-src}}}\" alt=\"\">\n" +
     "                        <div class=\"pi-links\">\n" +
-    "                            <a id='addToCart' \"#\" class=\"add-card\"><i class=\"flaticon-bag\"></i><span>Add to card</span></a>\n" +
+    "                            <a id='addToCart' \"#\" class=\"add-card\"><i class=\"flaticon-bag\"></i><span>Add to cart</span></a>\n" +
     "                            <a id='goToVendor' href=\"{{{vendor-link}}}\" class=\"wishlist-btn\"><i class=\"flaticon-heart\"></i></a>\n" +
     "                        </div>\n" +
     "                    </div>\n" +
@@ -58,7 +79,7 @@ var product_template = "<div class=\"product-item\">\n" +
     "                </div>"
 var store_product="<div class=\"col-lg-3 col-sm-6\">\n" +
     "                                <div class=\"product-item\">\n" +
-    "                                    <div class=\"pi-pic\">\n" +
+    "                                    <div style='height: 80%' class=\"pi-pic\">\n" +
     "                                        <img src=\"{{imageUrl}}\" alt=\"\">\n" +
     "                                        <div class=\"pi-links\">\n" +
     "                                            <a id='addToCart' href=\"#\" class=\"add-card\"><i class=\"flaticon-bag\"></i><span>CART</span></a>\n" +
@@ -71,6 +92,35 @@ var store_product="<div class=\"col-lg-3 col-sm-6\">\n" +
     "                                    </div>\n" +
     "                                </div>\n" +
     "                            </div>"
+var search_product="<div class=\"result row\">\n" +
+
+    "\n" +
+    "            <div style='width: auto'>\n" +
+    "            <div class='image-frame'><img src='' alt=\"\"></div>\n" +
+    "                <ul class=\"details\">\n" +
+    "                <li class=\"result-li\"><h5 style=\"height: 100%\" class=\"name\"></h5>\n" +
+    "                    <div class=\"rating\">\n" +
+    "                        <span class=\"fa fa-star checked\"></span>\n" +
+    "                        <span class=\"fa fa-star checked\"></span>\n" +
+    "                        <span class=\"fa fa-star checked\"></span>\n" +
+    "                        <span class=\"fa fa-star\"></span>\n" +
+    "                        <span class=\"fa fa-star\"></span>\n" +
+    "                    </div>\n" +
+    "                </li>\n" +
+    "                <li class=\"result-li right\">\n" +
+    "                <h3 class=\"price\">K 2,054</h3>\n" +
+    "\n" +
+    "                    <h6 class='vendor'>Company</h6>\n" +
+    "                    <h5>24 km away</h5>\n" +
+    "                </li>\n" +
+    "\n" +
+    "                </ul>\n" +
+    "            </div>\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "        </div>\n" +
+    "        <hr>"
 
 function addToCart(productId) {
     $.ajax({
@@ -91,11 +141,18 @@ function addToCart(productId) {
     })
 }
 
+export function genSearchProductTemplate(details) {
+    var template = $(search_product)
+    template.find('img').attr('src',productImgPrefix+details.productId)
+    template.find('.price').text(price(details.price))
+    template.find('.name').text(details.productName)
+    return template
+}
 
 export function genProductTemplate(details) {
     var template = $(product_template)
     template.find("#addToCart").on('click',function () {
-        alert("clicked")
+
         addToCart(details.productId)
     })
     template.find("img").attr('src',"/products/images?productId="+details.productId)
@@ -104,7 +161,7 @@ export function genProductTemplate(details) {
     template.find("img").on("click",function (e) {
         window.location.replace("/products/product/?productId="+details.productId);
     })
-    template.find("#price").text("ZMK "+details.price)
+    template.find("#price").text("ZMK "+price(details.price))
     return template
 }
 export function storeProductTemplate(details) {

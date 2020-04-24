@@ -1,33 +1,33 @@
 /* The side navigation menu */
-.sidebar {
-    margin: 0;
-    padding: 0;
-    width: 200px;
-    background-color: #f1f1f1;
-    position: fixed;
-    height: 100%;
-    overflow: auto;
-}
+/*.sidebar {*/
+/*    margin: 0;*/
+/*    padding: 0;*/
+/*    width: 200px;*/
+/*    background-color: #f1f1f1;*/
+/*    position: fixed;*/
+/*    height: 100%;*/
+/*    overflow: auto;*/
+/*}*/
 
 /* Sidebar links */
-.sidebar a {
-    display: block;
-    color: black;
-    padding: 16px;
-    text-decoration: none;
-}
+/*.sidebar a {*/
+/*    display: block;*/
+/*    color: black;*/
+/*    padding: 16px;*/
+/*    text-decoration: none;*/
+/*}*/
 
-/* Active/current link */
-.sidebar a.active {
-    background-color: #4CAF50;
-    color: white;
-}
+/*!* Active/current link *!*/
+/*.sidebar a.active {*/
+/*    background-color: #4CAF50;*/
+/*    color: white;*/
+/*}*/
 
-/* Links on mouse-over */
-.sidebar a:hover:not(.active) {
-    background-color: #555;
-    color: white;
-}
+/*!* Links on mouse-over *!*/
+/*.sidebar a:hover:not(.active) {*/
+/*    background-color: #555;*/
+/*    color: white;*/
+/*}*/
 
 /* Page content. The value of the margin-left property should match the value of the sidebar's width property */
 div.content {
@@ -76,7 +76,7 @@ td{
 }
 .banner{
 
-    background: url("/images/banner_ex2.jpg") no-repeat center center;
+
     -webkit-background-size: cover;
     -moz-background-size: cover;
     -ms-background-size: cover;
@@ -86,4 +86,14 @@ td{
     background-attachment: fixed;
     padding: 70px 0px;
     position: relative;
+}
+.sideBarItems{
+    text-align: center;
+}
+.sideBarItems li{
+    text-align: center;
+}
+.sideBarItems li:hover{
+    cursor: pointer;
+    background-color: #ec105a;
 }

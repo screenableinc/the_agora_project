@@ -1,0 +1,48 @@
+.checked{
+    color: #ea2c6d;
+}
+.rating{
+
+    right: 0px;
+}
+.result{
+    height: 140px;
+    display: inline-block;
+
+    width: 100%
+}
+.result .image-frame{
+    max-width: 23%;
+    min-width: 23%;
+    height: 140px;
+    float: left;
+    text-align: end;
+
+}
+.result img{
+    width: auto;
+    height: initial;
+
+
+    max-height: 100%;
+    float: left;
+
+}
+
+ul.details{
+    height: 100%;
+    width: 76%;
+    float: left;
+
+
+
+}
+.result-li{
+    list-style-type: none;
+    display: inline-block;
+    height: 90%;
+}
+.result-li.right{
+    float: right;
+    right: 0px;
+}

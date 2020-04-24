@@ -104,6 +104,25 @@ $(document).ready(function () {
         console.log("called")
 
     }
+    function addToOrdersTable(object) {
+
+        var row = $("<tr></tr>")
+        var tds = [$("<td>"+ object.productName +"</td>"),
+            $("<td>"+ object.username +"</td>"),
+            $("<td>"+ object.quantity  +"</td>"),
+            $("<td>"+ object.price +"</td>"),
+            $("<td>"+ object.phoneNumber +"</td>"),
+            $("<td>"+new Date(object.timestamp)  +"</td>")]
+        $(tds).each(function () {
+
+            row.append(this)
+        })
+
+
+        $("#ordersTableBody").append(row)
+
+
+    }
     function getItemsForSale() {
         $.ajax({
             url:"/products/all",
@@ -117,12 +136,37 @@ $(document).ready(function () {
                         addToItemsTable(msg.response[i])
                     }
                     $('#itemsTable').DataTable();
+                    $("#itemsCount").text(msg.response.length)
                 }else {
                 //    todo::show error
                 }
             },
             error:function () {
 
+            }
+
+        })
+    }
+    function getAllOrders() {
+        $.ajax({
+            url:"/orders/all",
+            type:"GET",
+            success: function (msg) {
+                console.log(msg)
+                if(msg.success){
+                    if(msg.response.length!==0){
+                        $("#ordersTableBody").empty()
+                    }
+                    for (var i = 0; i < msg.response.length; i++) {
+                        addToOrdersTable(msg.response[i])
+                    }
+                    $('#ordersTable').DataTable();
+                }else {
+                    //    todo::show error
+                }
+            },
+            error:function (msg) {
+                console.log(msg)
             }
 
         })
@@ -159,7 +203,7 @@ $(document).ready(function () {
         }
         })
     }
-    $('#ordersTable').DataTable();
+
     $('.dataTables_length').addClass('bs-select');
     $("#locationModal").on('show.bs.modal',function () {
 
@@ -211,8 +255,16 @@ $(document).ready(function () {
         $("#addItemModal").modal()
     })
 
+    function prepareForTable(data) {
+        var processed={}
+        for (var i = 0; i < data.length; i++) {
+            processed[data[i].name]=data[i].value
+        }
+        addToItemsTable(processed)
+    }
 
-    function readURL(input) {
+    //TODO fix this repetitive code
+    function readURLLogo(input,selector) {
 
         if (input.files && input.files[0]) {
             var reader = new FileReader();
@@ -220,40 +272,83 @@ $(document).ready(function () {
             reader.onload = function(e) {
 
 
-                $('#triggerUpload').attr('src', e.target.result);
+                $(selector).attr('src', e.target.result);
             }
 
             reader.readAsDataURL(input.files[0]);
-            //    start upload
 
-            // $("#upload").on("submit",function (e) {
-            //     e.preventDefault()
-            //     console.log($("#electionId").text())
-            //     $("#filename").val($("#electionId").text())
-            //     var data = new FormData(this)
-            //     $.ajax({
-            //         type:"POST",
-            //         contentType:false,
-            //         processData:false,
-            //         url:"/candidates/imageUpload",
-            //         data:data,
-            //         success:function (err) {
-            //             console.log("sdd")
-            //         },
-            //         error:function (err) {
-            //             console.log(err)
-            //         }
-            //     })
-            // })
+            ``
 
+        }
+    }
+    function readURL(input,selector) {
+
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+
+            reader.onload = function(e) {
+
+
+                $(selector).attr('src', e.target.result);
+            }
+
+            reader.readAsDataURL(input.files[0]);
+            if(selector==="#logo"){
+
+                var fd = new FormData($("#logoForm").get(0))
+                $.ajax({
+                    type:"POST",
+                    contentType:false,
+                    processData:false,
+                    url:"/business/logo",
+                    data:fd,
+                    success:function (err) {
+                        console.log("sdd")
+                    },
+                    error:function (err) {
+                        console.log(err)
+                    }
+                })
+            }else if(selector===".banner"){
+                var fd = new FormData($("#bannerForm").get(0))
+                $.ajax({
+                    type:"POST",
+                    contentType:false,
+                    processData:false,
+                    url:"/business/banner",
+                    data:fd,
+                    success:function (err) {
+                        console.log("sdd")
+                    },
+                    error:function (err) {
+                        console.log(err)
+                    }
+                })
+            }
+
+``
 
         }
     }
     $("#uploadImage").change(function () {
-        readURL(this)
+        readURL(this,"#triggerUpload")
     })
     $("#triggerUpload").on("click",function () {
         $("#uploadImage").trigger("click")
+    })
+
+    $("#bannerInput").change(function () {
+        readURL(this,'.banner')
+    })
+    $(".banner").on('click', function(){
+        $("#bannerInput").trigger('click')
+    })
+
+    $("#logoInput").change(function () {
+        readURL(this,'#logo')
+    })
+    $("#logo").on('click', function(){
+        $("#logoInput").trigger('click')
     })
     $("#addItemForm").on("submit",function (e) {
         e.preventDefault();
@@ -264,6 +359,8 @@ $(document).ready(function () {
         $("#productId").val(productId)
         if($("#uploadImage").val()!=='') {
             var fd = new FormData($("#addItemForm").get(0))
+            var dataForTable = $("#addItemForm").serializeArray()
+            prepareForTable(dataForTable)
 
             $.ajax({
                 url: "/products/additem",
@@ -289,5 +386,6 @@ $(document).ready(function () {
         }
     })
     getItemsForSale()
+    getAllOrders()
     loadCategories()
 });

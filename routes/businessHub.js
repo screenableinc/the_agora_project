@@ -4,16 +4,25 @@ var fs = require("fs")
 var multer = require("multer")
 var config = require("../modules/CONFIG")
 var storage = multer.diskStorage({
-    destination:"./images/products",
+    destination:"./images",
     filename:function (req, file, cb) {
-        var productId = req.body.productId;
+        var path = req._parsedUrl.path
+        var prefix=""
+        if (path.trim()=="/logo"){
+            prefix="/logos/"
+        }else if (path.trim()=="/banner"){
+            prefix="/banners/"
+        }
         var businessId = req.signedCookies.businessAuth.businessId
-        _filename = businessId+"_"+productId+".jpg";
+
+        _filename =prefix + businessId+".jpg";
+        console.log(_filename,"wise", path)
         cb(null, _filename)
 
 
     }
 })
+var upload = multer({storage:storage})
 var businessDb = require('../modules/dbOps/businessDbOps')
 var productsDb = require('../modules/dbOps/productDbObs')
 var genericDb = require('../modules/dbOps/genericQueries')
@@ -81,22 +90,29 @@ router.post('/login', function (req, res, next) {
 
 router.get('/dashboard', function (req, res, next) {
     var token = req.signedCookies
+
     if (token===undefined){
         res.redirect("login")
     }else {
         //finish up here
-        var businessId = token[config.gvs.businessAuthTokenName].businessId;
-        businessDb.getBusiness(businessId,function (msg) {
-            if(msg.code===200){
-                var response = msg.response[0]
-                res.render("dashboard",{businessName:response.businessName})
-
-            }else {
-                res.redirect("login")
-            }
-        })
+        try {
 
 
+            var businessId = token[config.gvs.businessAuthTokenName].businessId;
+
+            businessDb.getBusiness(businessId, function (msg) {
+                if (msg.code === 200) {
+                    var response = msg.response[0]
+                    res.render("dashboard", {businessName: response.businessName, businessId: businessId})
+
+                } else {
+                    res.redirect("login")
+                }
+            })
+
+        }catch (e) {
+            res.redirect("login")
+        }
     }
 
 })
@@ -107,7 +123,7 @@ router.get('/top',function (req, res, n) {
 })
 router.get('/logo', function (req, res, next) {
     var businessId = req.query.businessId+".jpg"
-    const path = __dirname.replace("routes","pictures\\\\"+businessId);
+    const path = __dirname.replace("routes","images\\logos\\"+businessId);
 
     if (fs.existsSync(path)){
         //    send file
@@ -117,7 +133,7 @@ router.get('/logo', function (req, res, next) {
         res.sendFile(path)
     }
 })
-router.post('/logo', function (req, res, next) {
+router.post('/logo', upload.single('logo'),function (req, res, next) {
     var businessId = req.body.businessId+".jpg"
     const path = __dirname.replace("routes","pictures\\\\"+businessId);
 
@@ -129,15 +145,30 @@ router.post('/logo', function (req, res, next) {
         res.sendFile(path)
     }
 })
-router.get('/banner',function (req, res, next) {
-    var businessId = req.query.businessId+".jpg"
-    const path = __dirname.replace("routes","images\\banners\\"+businessId);
+router.post('/banner', upload.single('banner'),function (req, res, next) {
+    var businessId = req.body.businessId+".jpg"
+    const path = __dirname.replace("routes","images\\\\"+businessId);
 
     if (fs.existsSync(path)){
         //    send file
         res.sendFile(path)
     }else {
-        const path = __dirname.replace("routes","public\\images\\businessLogoBanner.jpg");
+        const path = __dirname.replace("routes","public\\images\\business_logo_default.png");
+        res.sendFile(path)
+    }
+})
+router.get('/banner',function (req, res, next) {
+    console.log("here")
+    var businessId = req.query.businessId+".jpg"
+    const path = __dirname.replace("routes","images\\banners\\"+businessId);
+
+    if (fs.existsSync(path)){
+        //    send file
+        console.log("exists")
+        res.sendFile(path)
+    }else {
+        console.log("doesnt")
+        const path = __dirname.replace("routes","public\\images\\banner_ex2.jpg");
         res.sendFile(path)
     }
 })

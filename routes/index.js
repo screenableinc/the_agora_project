@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var config = require("../modules/CONFIG")
+var querystring = require('querystring')
 var genericDb = require('../modules/dbOps/genericQueries')
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -23,6 +24,26 @@ router.get('/', function(req, res, next) {
   }
 
 });
+router.get('/search',function (req, res, next) {
+    var q = req.query.qs
+    var page = req.query.page
+    q = querystring.escape(q)
+    console.log(q==='')
+
+
+    if(!q){
+      res.redirect('/')
+
+    }else {
+      genericDb.search(q,function (msg) {
+
+        res.render('search',{results:JSON.stringify(msg.response)})
+      })
+
+    }
+
+
+})
 
 router.post("/location/edit", function (req, res, next) {
   //for now..only business in mind

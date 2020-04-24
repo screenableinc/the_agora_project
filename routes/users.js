@@ -54,7 +54,7 @@ router.get('/cart/view', function(req, res, next) {
   var cookies = req.signedCookies
 
   if(cookies===undefined){
-    res.redirect("/")
+    res.redirect("/users/va")
   }else {
     if(cookies[config.gvs.userAuthTokenName].username===undefined){
 
