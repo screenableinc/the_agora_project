@@ -46,3 +46,7 @@ ul.details{
     float: right;
     right: 0px;
 }
+.name:hover{
+    cursor: pointer;
+    color: #ea2c6d;
+}

@@ -9,6 +9,9 @@ router.get('/login', function(req, res, next) {
 
   res.render("login",{});
 });
+
+
+
 router.post('/login', function(req, res, next) {
   var identifier = req.body.identifier;
 
@@ -54,7 +57,7 @@ router.get('/cart/view', function(req, res, next) {
   var cookies = req.signedCookies
 
   if(cookies===undefined){
-    res.redirect("/users/va")
+    res.redirect("login")
   }else {
     if(cookies[config.gvs.userAuthTokenName].username===undefined){
 
@@ -69,11 +72,11 @@ router.get('/cart/items',function (req, res, next) {
   if(cookies===undefined){
     res.send({success:false,code:403})
   }else {
-    var username = cookies[config.gvs.userAuthTokenName].username
+    var username = cookies[config.gvs.userAuthTokenName]
     if(username===undefined){
       res.send({success:false,code:403})
     }else {
-      userDb.getCart(username,function (msg) {
+      userDb.getCart(username.username,function (msg) {
         res.send(msg)
       })
     }
@@ -83,12 +86,13 @@ router.post('/cart/add',function (req, res, n) {
   var cookies = req.signedCookies
   var productId = req.body.productId
   if(cookies===undefined){
-    res.redirect("/")
+    res.send({success:false,code:403})
   }else {
-    var username = cookies[config.gvs.userAuthTokenName].username
+    var username = cookies[config.gvs.userAuthTokenName]
     if(username===undefined){
       res.send({success:false})
     }else {
+      username=username.username
       userDb.addToCart(username,productId,function (msg) {
         console.log(msg)
         res.send(msg)

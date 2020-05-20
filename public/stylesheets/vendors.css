@@ -97,3 +97,9 @@ td{
     cursor: pointer;
     background-color: #ec105a;
 }
+.nav li{
+    width: 100%;
+}
+#imagefinal {
+    display: none;
+}

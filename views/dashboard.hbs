@@ -64,8 +64,8 @@
     </ul>
 </div>
 </div>
-<div class="main-panel ps-container ps-theme-default">
-    <nav class="navbar navbar-expand-lg navbar-transparent navbar-absolute fixed-top ">
+<div class="main-panel">
+    <nav class="navbar navbar-expand-lg navbar-transparent">
         <div class="container-fluid">
             <div class="navbar-wrapper">
                 <a class="navbar-brand" href="#pablo">{{greeting}}</a>
@@ -129,9 +129,11 @@
             </div>
         </div>
     </nav>
-    <div  style="max-height: 300px;min-height: 255px;text-align: center;background: no-repeat center center;overflow: auto">
-    <img  style="width: 100%;height: 100%" src='/business/banner?businessId={{businessId}}' class="banner" alt="">
-<!--    <h1 style="bottom: -20px;color: white" id="businessName">{{businessName}}</h1>-->
+    <div id="banner" style="overflow: hidden;max-height: 300px;min-height: 255px;background-image: url('/business/banner?businessId={{businessId}}');background-color: rgba(255,255,255,0.7);" class="banner">
+
+        <h75 style="font-size: 96px;color: white" id="businessName">{{businessName}}</h75>
+
+
     </div>
     <div class="container">
     <div class="row">
@@ -231,6 +233,7 @@
                 </th>
                 <th class="th-sm">Deliverable
                 </th>
+                <th>Actions</th>
             </tr>
             </thead>
             <tbody id="itemsTableBody">
@@ -285,6 +288,7 @@
 </div>
 </div>
 </div>
+<input type="file" id="uploadImage" hidden>
 <!--modals-->
 <div id="addItemModal" class="modal" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
@@ -320,16 +324,22 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-md-5">
+                    <div class="col-md-4">
                         <div class="form-group">
                             <label class="bmd-label-floating">Barcode</label>
                             <input required id="Barcode" type="text" class="form-control" name="barcode">
                         </div>
                     </div>
-                    <div class="col-md-5">
+                    <div class="col-md-4">
                         <div class="form-group">
                             <label class="bmd-label-floating">Category</label>
                             <select class="form-control" name="category" id="categories"></select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="bmd-label-floating">Currency</label>
+                            <select class="form-control" name="currency" id="currencies"></select>
                         </div>
                     </div>
                 </div>
@@ -350,6 +360,14 @@
                         </div>
                     </div>
                 </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label class="bmd-label-floating">Type</label>
+                                <input required id="type" type="text" class="form-control" name="type">
+                            </div>
+                        </div>
+                    </div>
                 <div class="row">
                     <div class="col-md-12">
                         <div class="form-group">
@@ -358,7 +376,7 @@
                         </div>
                     </div>
                 </div>
-                    <input name="image" type="file" hidden id="uploadImage">
+
                     <div class="modal-footer">
                         <button id="addItem" type="submit" class="btn btn-primary">Save changes</button>
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -417,7 +435,7 @@
 
 
 </script>
-<script src="/js/business.js"></script>
+<script src="/js/business.js" type="module"></script>
 <script type="text/javascript" src="/js/datatables.min.js"></script>
 
 

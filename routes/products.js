@@ -30,6 +30,30 @@ var storage = multer.diskStorage({
 
     }
 })
+
+function store(req, callback){
+    var productId = req.body.productId;
+    var businessId = req.signedCookies.businessAuth.businessId
+
+    var identifier = Date.now()+productId
+    productId=productId+"_"+businessId;
+
+    var _filename = identifier+".jpg";
+    productsDb.addProductImageIdentifier(identifier,productId,function (msg) {
+        if(msg.code===200){
+        //    store file
+            console.log(req.body.image)
+            var data=Buffer.from(req.body.image.split('base64,')[1],'base64')
+
+            fs.writeFileSync(__dirname.replace("routes","images/products/"+_filename),data)
+            return callback({success: true})
+        }else {
+            console.log(msg.response+"error")
+            return callback({success:false})
+        }
+    })
+
+}
 var upload = multer({storage:storage})
 
 router.get('/product', function (req, res, next) {
@@ -37,8 +61,7 @@ router.get('/product', function (req, res, next) {
     productsDb.getProduct(productId,function (msg) {
         if(msg.code===200){
             var product = msg.response[0]
-            res.render("product",{imageurl:"/products/images?productId="+productId, name:product.productName
-            ,price:product.price,description:product.description})
+            res.render("product",{product:JSON.stringify(product)})
 
         }else {
             res.redirect("/")
@@ -78,6 +101,9 @@ router.post('/additem', upload.single("image"),async function (req, res, next) {
     var price = req.body.price;
     var quantity = req.body.quantity;var barcode = req.body.barcode;
     var productName = req.body.productName
+    var genericName = req.body.genericName
+    var currency = req.body.currency
+
     var deliverable = parseInt(req.body.deliverable);
 
 
@@ -87,11 +113,25 @@ router.post('/additem', upload.single("image"),async function (req, res, next) {
     }else {
         var businessId = cookie.businessAuth.businessId
         productId = productId+"_"+businessId
-        productsDb.addProduct(businessId,productId,descr,price,deliverable,quantity,barcode, categoryId,productName,function (msg) {
+        productsDb.addProduct(businessId,productId,descr,price,deliverable,quantity,barcode, categoryId,productName,genericName,currency,function (msg) {
 
-            res.send(msg)
+            if(msg.success) {
+                store(req, function (good) {
+                    (good.success)? res.send(msg):res.send(good)
+                })
+            }else {
+                res.send(msg)
+            }
         })
     }
+})
+
+router.post("/delete",function (req, res, next) {
+    var productId = req.body.productId
+//    TODO secure this to only user and make sure no one has order before deleting
+    productsDb.deleteProduct({productId:JSON.stringify(req.body.productId)},function (msg) {
+        res.send(msg)
+    })
 })
 router.get("/images", function (req, res, next) {
     var productId = req.query.productId;
@@ -100,19 +140,19 @@ router.get("/images", function (req, res, next) {
 
         if(!msg.success){
         //    send generic pic
-            const path = __dirname.replace("routes","images\\products\\default.jpg");
+            const path = __dirname.replace("routes","images/products/default.jpg");
             res.sendFile(path)
         }else {
             var imagename =  msg.response[0].identifier+".jpg"
 
 
-            const path = __dirname.replace("routes","images\\products\\"+imagename);
+            const path = __dirname.replace("routes","images/products/"+imagename);
 
             if (fs.existsSync(path)){
                 //    send file
                 res.sendFile(path)
             }else {
-                const path = __dirname.replace("routes","images\\products\\default.jpg");
+                const path = __dirname.replace("routes","images/products/default.jpg");
                 res.sendFile(path)
             }
         }

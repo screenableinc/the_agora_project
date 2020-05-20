@@ -32,11 +32,11 @@ router.get("/",function (req, res, next) {
     var businessId = req.query.vendorId
     businessDb.getBusiness(businessId,function (msg) {
 
-        if(msg.code===200) {
+        if(msg.code===200 && msg.response.length > 0) {
             res.render('store', {businessName:msg.response[0].businessName,businessId:businessId})
         }else {
-            res.send("okay")
-            // res.redirect("/")
+            // res.send("okay")
+            res.redirect("/")
         }
     })
 
@@ -72,7 +72,7 @@ router.post("/join", function (req, res, next) {
 router.post('/login', function (req, res, next) {
     var businessId = req.body.businessId
     var password = req.body.password
-    console.log(req.body)
+
 
     businessDb.authLogin(businessId,password,function (msg) {
         if(msg.success){
@@ -102,8 +102,10 @@ router.get('/dashboard', function (req, res, next) {
 
             businessDb.getBusiness(businessId, function (msg) {
                 if (msg.code === 200) {
-                    var response = msg.response[0]
-                    res.render("dashboard", {businessName: response.businessName, businessId: businessId})
+
+
+                   (msg.response.length === 0) ? res.redirect('login'):res.render("dashboard", {businessName: msg.response[0].businessName, businessId: businessId})
+
 
                 } else {
                     res.redirect("login")
@@ -123,44 +125,44 @@ router.get('/top',function (req, res, n) {
 })
 router.get('/logo', function (req, res, next) {
     var businessId = req.query.businessId+".jpg"
-    const path = __dirname.replace("routes","images\\logos\\"+businessId);
+    const path = __dirname.replace("routes","images/logos/"+businessId);
 
     if (fs.existsSync(path)){
         //    send file
         res.sendFile(path)
     }else {
-        const path = __dirname.replace("routes","public\\images\\business_logo_default.png");
+        const path = __dirname.replace("routes","public/images/business_logo_default.png");
         res.sendFile(path)
     }
 })
 router.post('/logo', upload.single('logo'),function (req, res, next) {
     var businessId = req.body.businessId+".jpg"
-    const path = __dirname.replace("routes","pictures\\\\"+businessId);
+    const path = __dirname.replace("routes","pictures/"+businessId);
 
     if (fs.existsSync(path)){
         //    send file
         res.sendFile(path)
     }else {
-        const path = __dirname.replace("routes","public\\images\\business_logo_default.png");
+        const path = __dirname.replace("routes","public/images/business_logo_default.png");
         res.sendFile(path)
     }
 })
 router.post('/banner', upload.single('banner'),function (req, res, next) {
     var businessId = req.body.businessId+".jpg"
-    const path = __dirname.replace("routes","images\\\\"+businessId);
+    const path = __dirname.replace("routes","images/"+businessId);
 
     if (fs.existsSync(path)){
         //    send file
         res.sendFile(path)
     }else {
-        const path = __dirname.replace("routes","public\\images\\business_logo_default.png");
+        const path = __dirname.replace("routes","public/images/business_logo_default.png");
         res.sendFile(path)
     }
 })
 router.get('/banner',function (req, res, next) {
     console.log("here")
     var businessId = req.query.businessId+".jpg"
-    const path = __dirname.replace("routes","images\\banners\\"+businessId);
+    const path = __dirname.replace("routes","images/banners/"+businessId);
 
     if (fs.existsSync(path)){
         //    send file
@@ -168,7 +170,7 @@ router.get('/banner',function (req, res, next) {
         res.sendFile(path)
     }else {
         console.log("doesnt")
-        const path = __dirname.replace("routes","public\\images\\banner_ex2.jpg");
+        const path = __dirname.replace("routes","public/images/banner_ex2.jpg");
         res.sendFile(path)
     }
 })

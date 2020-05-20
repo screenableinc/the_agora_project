@@ -1,5 +1,6 @@
 var connection = require('../dbOps/db.js')
 var config = require('../CONFIG')
+var parameterize = require('../dbOps/parameterize.js')
 function select(column, table, key, value,callback) {
     //this might not take format string
     var sql = "SELECT "+ column +" FROM "+ table +" WHERE "+ key +" = "+ value +"";
@@ -40,12 +41,16 @@ function entryExists(table,columnKey,columnValue, callback){
     })
 }
 function search(value,callback) {
-    var sql = "SELECT * FROM products WHERE productName LIKE '%"+value+"%'"
-    console.log(sql)
-    connection.query(sql, function (err, result) {
-        if(err)throw err;
-        return callback({success:true, code:200, response:result})
+    parameterize.search_products(["products.*", "businesses.businessName"],{},value,function (sql) {
+        console.log(sql)
+        // var sql = "SELECT products.*, businesses.businessName FROM products JOIN businesses ON businesses.businessId = products.vendorId WHERE productName LIKE '%"+value+"%'"
+        console.log(sql)
+        connection.query(sql, function (err, result) {
+            if(err)throw err;
+            return callback({success:true, code:200, response:result})
+        })
     })
+
 }
 
 function addOrEditLocation(id,lat,lng,city,country,callback) {
@@ -83,10 +88,22 @@ function addOrEditLocation(id,lat,lng,city,country,callback) {
 function insert(){
     var sql = "INSERT INTO , WHERE -- = --"
 }
+function currencies(callback){
+    parameterize.alpha_select("*","currencies",null,null,null,null,null,function (sql) {
+        connection.query(sql,function (err, result) {
+            if(err){
+                return callback({success:false})
+            }else {
+                return callback({success:true,code:200,response:result})
+            }
+        })
+    })
+}
 
 module.exports={
     select:select,
     addOrEditLocation:addOrEditLocation,
-    search:search
+    search:search,
+    currencySelect:currencies
     // selectAll:selectAll
 }

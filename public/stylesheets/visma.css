@@ -781,12 +781,13 @@ ol {
 ------------------------*/
 
 .top-letest-product-section {
-	padding-top: 70px;
-	padding-bottom: 60px;
+	/*padding-top: 70px;*/
+	/*padding-bottom: 60px;*/
+	margin-bottom: 20px;
 }
 
 .top-letest-product-section .section-title {
-	margin-bottom: 70px;
+	/*margin-bottom: 70px;*/
 }
 
 .product-slider .owl-nav {
@@ -893,7 +894,7 @@ ol {
 }
 
 .product-item .pi-links a.add-card:hover {
-	width: 148px;
+	width: 100px;
 	padding: 8px 18px 0;
 	text-align: left;
 }
@@ -2440,4 +2441,17 @@ ol {
 	background-attachment: fixed;
 	padding: 70px 0px;
 	position: relative;
+}
+#navbar li a{
+	font-size: smaller;
+}
+.carousels .item{
+	margin-left: 15px;
+}
+.product-item #name{
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-lines: 1;
+
 }

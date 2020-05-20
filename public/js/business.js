@@ -1,52 +1,14 @@
+import * as manipulate from './clientmodules/mani.js'
+import * as templating from './templateBuilders/template.js'
 $(document).ready(function () {
+    //function overlay height
+    $("#overlay").css('height',$("#banner").height())
+    // console.log($("#banner").height())
+
+
+
     var g_var_categories=[]
-    function reverseGeoCode(lat,lng) {
-        var latlng;
-        latlng = new google.maps.LatLng(lat, lng); // New York, US
 
-
-        new google.maps.Geocoder().geocode({'latLng' : latlng}, function(results, status) {
-            if (status === google.maps.GeocoderStatus.OK) {
-                if (results[1]) {
-                    var country = null, countryCode = null, city = null, cityAlt = null;
-                    var c, lc, component;
-                    for (var r = 0, rl = results.length; r < rl; r += 1) {
-                        var result = results[r];
-
-                        if (!city && result.types[0] === 'locality') {
-                            for (c = 0, lc = result.address_components.length; c < lc; c += 1) {
-                                component = result.address_components[c];
-
-                                if (component.types[0] === 'locality') {
-                                    city = component.long_name;
-                                    break;
-                                }
-                            }
-                        }
-                        else if (!city && !cityAlt && result.types[0] === 'administrative_area_level_1') {
-                            for (c = 0, lc = result.address_components.length; c < lc; c += 1) {
-                                component = result.address_components[c];
-
-                                if (component.types[0] === 'administrative_area_level_1') {
-                                    cityAlt = component.long_name;
-                                    break;
-                                }
-                            }
-                        } else if (!country && result.types[0] === 'country') {
-                            country = result.address_components[0].long_name;
-                            countryCode = result.address_components[0].short_name;
-                        }
-
-                        if (city && country) {
-                            break;
-                        }
-                    }
-
-                    console.log("City: " + city + ", City2: " + cityAlt + ", Country: " + country + ", Country Code: " + countryCode);
-                }
-            }
-        });
-    }
     function geoLocate(map) {
         var infoWindow = new google.maps.InfoWindow;
 
@@ -85,23 +47,23 @@ $(document).ready(function () {
 
 
     function addToItemsTable(object) {
-        console.log(g_var_categories)
-        var row = $("<tr></tr>")
-        var tds = [$("<td>"+ object.productId +"</td>"),
-        $("<td>"+ object.productName +"</td>"),
-        $("<td>"+ g_var_categories[object.categoryId] +"</td>"),
-       $("<td>"+ object.barcode +"</td>"),
-        $("<td>"+ object.price +"</td>"),
-        $("<td>"+ object.description +"</td>"),
-        $("<td>"+ object.deliverable +"</td>")]
-        $(tds).each(function () {
+       //  console.log(g_var_categories)
+       //  var row = $("<tr></tr>")
+       //  var tds = [$("<td>"+ object.productId +"</td>"),
+       //  $("<td>"+ object.productName +"</td>"),
+       //  $("<td>"+ g_var_categories[object.categoryId] +"</td>"),
+       // $("<td>"+ object.barcode +"</td>"),
+       //  $("<td>"+ object.price +"</td>"),
+       //  $("<td>"+ object.description +"</td>"),
+       //  $("<td>"+ object.deliverable +"</td>")]
 
-            row.append(this)
-        })
+        var row = templating.genItemsTemplate([object.productId, object.productName,object.categoryId,object.barcode,object.price, object.description,object.deliverable])
+
+
 
 
         $("#itemsTableBody").append(row)
-        console.log("called")
+
 
     }
     function addToOrdersTable(object) {
@@ -192,7 +154,7 @@ $(document).ready(function () {
 
             for (var i = 0; i < categories.length; i++) {
                 g_var_categories.push(categories[i].categoryId)
-                console.log()
+
                 // g_var_categories[categories[i].categoryId+" okay"]="okay"
                 var option = $("<option value="+ categories[i].categoryId +">"+ categories[i].name +"</option>")
                 $("#categories").append(option)
@@ -203,12 +165,33 @@ $(document).ready(function () {
         }
         })
     }
+    
+    function loadCurrencies(){
+        $.ajax({
+            url:"/currencies/all",
+            method:"GET",
+            success:function (currencies) {
+                currencies = currencies.response
+
+                for (var i = 0; i < currencies.length; i++) {
+
+
+                    // g_var_categories[categories[i].categoryId+" okay"]="okay"
+                    var option = $("<option value="+ currencies[i].id +">"+ currencies[i].shorthand +"</option>")
+                    $("#currencies").append(option)
+                }
+            },
+            error:function () {
+            //    TODO handle
+            }
+        })
+    }
 
     $('.dataTables_length').addClass('bs-select');
     $("#locationModal").on('show.bs.modal',function () {
 
         //remember to move into function
-        map = new google.maps.Map(document.getElementById('map'), {
+        var map = new google.maps.Map(document.getElementById('map'), {
             center: {lat: 34.397, lng: 150.644},
             zoom: 2
         });
@@ -330,10 +313,11 @@ $(document).ready(function () {
 
         }
     }
-    $("#uploadImage").change(function () {
-        readURL(this,"#triggerUpload")
-    })
+    manipulate.start("#uploadImage",document.getElementById('uploadImage'),document.getElementById('addItemForm'))
     $("#triggerUpload").on("click",function () {
+
+        $("#imagefinal").remove()
+
         $("#uploadImage").trigger("click")
     })
 
@@ -359,7 +343,9 @@ $(document).ready(function () {
         $("#productId").val(productId)
         if($("#uploadImage").val()!=='') {
             var fd = new FormData($("#addItemForm").get(0))
+
             var dataForTable = $("#addItemForm").serializeArray()
+
             prepareForTable(dataForTable)
 
             $.ajax({
@@ -388,4 +374,5 @@ $(document).ready(function () {
     getItemsForSale()
     getAllOrders()
     loadCategories()
+    loadCurrencies()
 });

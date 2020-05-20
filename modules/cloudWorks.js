@@ -26,3 +26,6 @@ function upload(path, uniqueFileName, callback) {
 //         cb(null, file.originalname)
 //     }
 // })
+module.exports = {
+    cloudinary:cloudinary
+}

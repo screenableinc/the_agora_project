@@ -3,8 +3,10 @@ var router = express.Router();
 var config = require("../modules/CONFIG")
 var querystring = require('querystring')
 var genericDb = require('../modules/dbOps/genericQueries')
+var parameterize = require('../modules/dbOps/parameterize')
 /* GET home page. */
 router.get('/', function(req, res, next) {
+  // res.render('birthday')
   var cookies = req.signedCookies;
   if(cookies===undefined){
     res.render('home', {title: 'Home'});
@@ -17,21 +19,26 @@ router.get('/', function(req, res, next) {
       if(userId===undefined){
         res.render('home', {title: 'Home'});
       }else {
-        res.render('home',{title:"Home",displayNone:"none",userId:userId})
+        res.render('home',{title:"Home",displayNone:"none"})
       }
 
     }
   }
 
 });
+router.get('/currencies/all', function (req, res, next) {
+   genericDb.currencySelect(function (msg) {
+       res.send(msg)
+   })
+})
 router.get('/search',function (req, res, next) {
     var q = req.query.qs
     var page = req.query.page
     q = querystring.escape(q)
-    console.log(q==='')
+    console.log(q)
 
 
-    if(!q){
+    if(q.trim()==''){
       res.redirect('/')
 
     }else {
@@ -45,6 +52,14 @@ router.get('/search',function (req, res, next) {
 
 })
 
+router.post('/ads',function (req, res, next) {
+    var vendorId = req.body.vendorId
+    var adId = req.body.adId
+    var description = req.body.description
+
+    var banner;
+
+})
 router.post("/location/edit", function (req, res, next) {
   //for now..only business in mind
   var cookies = req.signedCookies;

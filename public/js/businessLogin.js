@@ -45,11 +45,14 @@ function attachListeners() {
                 if (msg.code === 100) {
                     window.location.replace("/business/dashboard");
                 } else {
-                    alert("error")
+                    $(".signuperror").css('display','block')
                 }
 
             }
         })
+    })
+    $("input").on('click',function () {
+        $(".error").css('display','none')
     })
     $("#actualLoginForm").on("submit", function (e) {
 
@@ -61,8 +64,8 @@ function attachListeners() {
             success: function (msg) {
                 if (msg.code === 100) {
                     window.location.replace("/business/dashboard");
-                } else {
-                    alert("error")
+                } else if(msg.code===403) {
+                    $(".error").css('display','block')
                 }
 
             }

@@ -38,7 +38,16 @@ $(document).ready(function () {
                         $("#latestProducts").append(templating.genProductTemplate(msg.response[i]))
 
                     }
-                    initSlider($('#latestProducts'))
+                    $('#latestProducts').slick({
+                        dots: true,
+                        slidesToShow:5,
+                        slidesToScroll:2,
+                        infinite: true,
+                        speed: 500,
+                        fade: true,
+                        cssEase: 'linear'
+                    })
+                    // initSlider($('#latestProducts'))
                 }
             },
             error:function () {
@@ -61,7 +70,8 @@ $(document).ready(function () {
                         $("#topBrands").append(templating.genBrandTemplate(msg.response[i]))
 
                     }
-                    initSlider($("#topBrands"))
+
+                    // initSlider($("#topBrands"))
                 }
             },
             error:function (msg) {
@@ -71,6 +81,37 @@ $(document).ready(function () {
             }
         })
     }
+
+    function loadCategoriesView(list) {
+        for (var i = 0; i < list.length; i++) {
+            $("#topCategories").append(templating.genCategoryTemplate(list[i]))
+        }
+    }
+    function loadCategories(){
+        $.ajax({
+            url:"/categories?which=categories",
+            type:"GET",
+            success:function (msg) {
+                console.log(msg)
+                loadCategoriesView(msg.response)
+            },
+            error:function () {
+
+            }
+        })
+    }
+    function initTopSlider(){
+        $('.topSlider').slick({
+            dots: true,
+            infinite: true,
+            speed: 500,
+            fade: true,
+            cssEase: 'linear'
+        })
+
+    }
+initTopSlider()
 loadLatestProducts()
 loadTopBrands()
+loadCategories()
 })

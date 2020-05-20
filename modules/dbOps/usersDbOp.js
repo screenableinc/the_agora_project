@@ -56,7 +56,8 @@ function addToCart(username,productId,callback) {
     var values =[[productId,username]]
     connection.query(sql,values,function (err,result) {
         if(err){
-            return callback({success:false,response:err,code:500})
+
+            return callback({success:false,response:err,code:500,err:err.errno})
         }else {
             return callback({success:true,code:200})
         }
@@ -68,7 +69,8 @@ function getCart(username, callback) {
         if(err){
             return callback({success:false,code:500})
         }else {
-            return callback({success:true, response:result,code:200})
+            //getting username piggy backed off of this function
+            return callback({success:true, response:result,code:200,username:username})
         }
     })
     // genericQueries.select("*",config.STNs.cart,"username",JSON.stringify(username),function (msg) {

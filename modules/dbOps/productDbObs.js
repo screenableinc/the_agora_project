@@ -1,5 +1,6 @@
 var connection = require('../dbOps/db.js')
 var genericQueries = require('../dbOps/genericQueries.js');
+var parameterizedQueries = require('../dbOps/parameterize.js');
 var config = require('../CONFIG')
 
 function getCategories(callback) {
@@ -13,10 +14,10 @@ function getCategories(callback) {
     })
 }
 
-function addProduct(businessId, productId,description, price, deliverable,quantity, barcode,categoryId,productName,callback){
+function addProduct(businessId, productId,description, price, deliverable,quantity, barcode,categoryId,productName,genericName,currency,callback){
     var sql = "INSERT INTO products (vendorId, productId, description, price, deliverable," +
-        "quantity, barcode, categoryId, productName, timestamp) VALUES (?)"
-    var values = [[businessId,productId, description,price,deliverable, quantity,barcode, categoryId,productName, new Date().getTime()]]
+        "quantity, barcode, categoryId, productName, timestamp, genericName,currency) VALUES (?)"
+    var values = [[businessId,productId, description,price,deliverable, quantity,barcode, categoryId,productName, new Date().getTime(), genericName,currency]]
 
     connection.query(sql, values, function (err, result) {
         if(err){
@@ -92,7 +93,34 @@ function getTopProducts(callback){
         }
     })
 }
+
+function getLatestProductsForCategory(where, callback) {
+    parameterizedQueries.alpha_select("*","products",null,where,6,{"GROUP BY":"productId", "ORDER BY": "timestamp"},"DESC",function (sql) {
+        console.log(sql)
+        connection.query(sql, function (err,result) {
+            if(err){
+                //todo alert webmaster
+                return callback({success:false})
+            }else {
+                return callback({success:true,response:result})
+            }
+        })
+    })
+}
+function deleteProduct(where,callback) {
+    parameterizedQueries.deleteEntry("products",where,function (sql) {
+        connection.query(sql, function (err, result) {
+            if(err){
+                console.log(err)
+                return callback({success:false,code:500})
+            }else {
+                return callback({success:true,code:200})
+            }
+        })
+    })
+}
 function getLatestProducts(callback){
+
     var sql  =  "SELECT * FROM products GROUP BY productId ORDER BY timestamp DESC LIMIT 6"
     connection.query(sql, function (err, result) {
         if(err){
@@ -112,5 +140,7 @@ module.exports = {
     getLatestProducts:getLatestProducts,
     getImageIdentifier:getImageIdentifier,
     getProduct:getProduct,
-    addToCart:addToCart
+    addToCart:addToCart,
+    getLatestProductsForCategory:getLatestProductsForCategory,
+    deleteProduct:deleteProduct
 }

@@ -19,6 +19,13 @@ router.post('/order',function (req, res, next) {
 
 
 })
+
+
+router.post('/accept',function () {
+//    send message that order has been seen and accepted
+
+
+})
 router.get('/all',function (req, res, next) {
     try {
         var businessId = req.signedCookies[config.gvs.businessAuthTokenName].businessId;

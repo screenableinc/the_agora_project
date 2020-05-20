@@ -16,6 +16,7 @@
     "morgan": "~1.9.1",
     "multer": "^1.4.2",
     "mysql": "^2.18.1",
+    "serve-favicon": "^2.5.0",
     "tus-js-client": "^1.8.0"
   }
 }
