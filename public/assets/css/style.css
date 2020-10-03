@@ -1,19 +1,13 @@
 html{
 	height: 100%;
-	font-family: 'HelveticaNeue-Light', 'HelveticaNeue', Helvetica, Arial, sans-serif;
+	font-family: 'HelveticaNeue-Light', serif;
 	/*background: url(/images/bl.jpg) no-repeat center center fixed;*/
 	-webkit-background-size: cover;
 	-moz-background-size: cover;
 	-o-background-size: cover;
 	background-size: cover;
 }
-.wrapper{
-	position: fixed;
-	height: 100%;
-	width: 100%;
-	/*background-color: rgba(0,0,0,0.6);*/
-	background-color: rgba(255,255,255,0.8);
-}
+
 button {
 	background: #ec105a;
 	color: white;

@@ -27,6 +27,7 @@ var businessDb = require('../modules/dbOps/businessDbOps')
 var productsDb = require('../modules/dbOps/productDbObs')
 var genericDb = require('../modules/dbOps/genericQueries')
 var cookieMgr = require('../modules/cookieManager.js')
+var auth = require('../modules/auth/auth')
 
 router.get("/",function (req, res, next) {
     var businessId = req.query.vendorId
@@ -40,6 +41,9 @@ router.get("/",function (req, res, next) {
         }
     })
 
+})
+router.get('/settings', function (req, res,next) {
+    res.render('settings')
 })
 router.get("/products",function (req, res,next) {
     var businessId = req.query.businessId
@@ -118,8 +122,25 @@ router.get('/dashboard', function (req, res, next) {
     }
 
 })
+
+router.get('/notifications', function (req, res, next){
+    var token = new auth.auth_check(req,0).auth
+
+    token.then(function (val){
+        console.log(val,"hha")
+        if(val!==undefined) {
+            businessDb.getNotifications(val.username, null, function (msg) {
+                res.send(msg)
+            })
+        }else {
+            res.send({code:403})
+        }
+    })
+
+})
 router.get('/top',function (req, res, n) {
     businessDb.getTopBrands(function (msg) {
+        console.log(msg)
         res.send(msg)
     })
 })

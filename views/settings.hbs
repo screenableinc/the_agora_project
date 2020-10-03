@@ -1,0 +1,124 @@
+<html lang="en" class="perfect-scrollbar-on">
+<head>
+    <link rel="stylesheet" href="/stylesheets/datatables.min.css">
+    <!--    <link rel="stylesheet" href="/stylesheets/bootstrap.min.css">-->
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons">
+    <link rel="stylesheet" href="/stylesheets/material-dashboard.css">
+
+    <link rel="stylesheet" href="/stylesheets/vendors.css">
+
+</head>
+<header>
+
+</header>
+<body>
+<div style="display: none">
+    <form action="" id="logoForm" >
+        <input name="logo" type="file" hidden id="logoInput">
+    </form>
+    <form action="" id="bannerForm">
+        <input name="banner" type="file" hidden id="bannerInput">
+    </form>
+</div>
+<div class="container">
+    <div class="wrapper">
+        <div class="sidebar">
+
+            <div class="sidebar-wrapper">
+                <div class="container">
+                    <img id="logo" src="/business/logo?businessId={{businessId}}" alt="">
+                </div>
+
+                <ul class="nav">
+                    <li id="addItems" class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="material-icons">library_add</i>
+                            <p>Add Item</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="">
+                            <i class="material-icons">settings</i>
+                            <p>Account Settings</p>
+                        </a>
+                    </li>
+                    <li id="locationSettings" class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="material-icons">edit_location</i>
+                            <p>Location Settings</p>
+                        </a>
+                    </li>
+
+                    <li id="logOut" class="nav-item active">
+                        <a class="nav-link" href="">
+                            <i class="material-icons">settings_power</i>
+                            <p>Log out</p>
+                        </a>
+                    </li>
+
+
+
+
+                </ul>
+            </div>
+        </div>
+        <div class="main-panel">
+
+        <div class="container">
+            <div class="row">
+                <div class="card col-lg-6 col-sm-12">
+                    <div class="card-header card-header-primary">
+                        Contact Information
+                    </div>
+                    <div class="card-body">
+                        <form>
+                            <div class="row">
+                                <div class="col-lg-6 form-group">
+                                <label for="numberOne">Number 1</label>
+                                <input class="form-control" name="numberOne" type="number">
+                                </div>
+                                <div class="form-group col-lg-6">
+                                    <label for="numberTwo">Number 2</label>
+                                    <input class="form-control" name="numberTwo" type="number">
+                                </div>
+                                </div>
+
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+<!--            payments-->
+            <div class="container">
+
+            </div>
+
+<!--            -->
+
+
+        </div>
+        <!--end modals-->
+        <script type="text/javascript" src="/js/jquery-3.2.1.min.js"></script>
+        <script src="/js/popper.min.js"></script>
+        <script src="/js/perfect-scrollbar.jquery.min.js"></script>
+        <script src="/js/bootstrap-material-design.min.js"></script>
+        <script src="/js/material-dashboard.js?v=2.1.1" type="text/javascript"></script>
+
+        <script async defer
+                src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD9hUpipwWmIJyWcbpRCRmUDRwD0oZ24g4">
+
+
+        </script>
+        <script src="/js/business.js" type="module"></script>
+        <script type="text/javascript" src="/js/datatables.min.js"></script>
+
+    </div>
+    </div>
+
+</body>
+<footer>
+
+</footer>
+</html>

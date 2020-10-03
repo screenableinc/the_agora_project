@@ -28,6 +28,8 @@ function select(column, table, key, value,callback) {
 //     })
 // }
 
+
+//TODO deprecate
 function entryExists(table,columnKey,columnValue, callback){
     var sql  = "SELECT * FROM "+table+ " WHERE "+columnKey+" = " +JSON.stringify(columnValue)
     connection.query(sql, function (err, result) {
@@ -40,17 +42,34 @@ function entryExists(table,columnKey,columnValue, callback){
         }
     })
 }
-function search(value,callback) {
-    parameterize.search_products(["products.*", "businesses.businessName"],{},value,function (sql) {
+
+function del(table,where,callback) {
+    parameterize.deleteEntry(table,where,function (sql) {
+        connection.query(sql,function (err, result) {
+            if(err){
+                console.log(err)
+                return callback({success:false,code:500})
+            }else {
+                return callback({success:true,code:200})
+            }
+        })
+    })
+}
+function search(value,where,callback) {
+    parameterize.search_products(["products.*", "businesses.businessName","currencies.symbol","locations.*"],where,value,function (sql) {
         console.log(sql)
         // var sql = "SELECT products.*, businesses.businessName FROM products JOIN businesses ON businesses.businessId = products.vendorId WHERE productName LIKE '%"+value+"%'"
-        console.log(sql)
+
         connection.query(sql, function (err, result) {
             if(err)throw err;
             return callback({success:true, code:200, response:result})
         })
     })
 
+}
+
+function barcode_search(code,callback){
+    parameterize.alpha_select()
 }
 
 function addOrEditLocation(id,lat,lng,city,country,callback) {
@@ -99,11 +118,25 @@ function currencies(callback){
         })
     })
 }
+function exists(table, where, callback){
+    parameterize.alpha_select("*",table,null,where,null,null,null,function (sql) {
+        connection.query(sql,function (err, result) {
+            if(err){
+                return callback({success:false, code:500})
+            }else {
+                var code = (result.length===0) ? 100:403
+                return callback({success:true,code:code})
+            }
+        })
+    })
+}
 
 module.exports={
     select:select,
     addOrEditLocation:addOrEditLocation,
     search:search,
-    currencySelect:currencies
+    currencySelect:currencies,
+    del:del,
+    exists:exists
     // selectAll:selectAll
 }

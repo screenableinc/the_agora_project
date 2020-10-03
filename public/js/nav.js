@@ -26,7 +26,7 @@ $(document).ready(function () {
         "\t\t\t\t\t\t\t\t\t<i class=\"material-icons\">shopping_cart</i>\n" +
         "\t\t\t\t\t\t\t\t\t<span id=\"cartItemCount\">0</span>\n" +
         "\t\t\t\t\t\t\t\t</div>\n" +
-        "\t\t\t\t\t\t\t\t<a href=\"#\">Shopping Cart</a>\n" +
+        "\t\t\t\t\t\t\t\t<a href=\"/users/cart/view\">Shopping Cart</a>\n" +
         "\t\t\t\t\t\t\t</div>\n" +
         "\t\t\t\t\t\t</div>\n" +
         "\t\t\t\t\t</div>\n" +

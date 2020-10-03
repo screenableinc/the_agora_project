@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var ordersDb = require('../modules/dbOps/ordersDbOp')
+var parameterize = require('../modules/dbOps/parameterize')
 var config = require("../modules/CONFIG")
 router.get('/',function (req, res, next) {
 
@@ -11,6 +12,7 @@ router.post('/order',function (req, res, next) {
     try {
         var username = req.signedCookies[config.gvs.userAuthTokenName].username
         ordersDb.makeOrder(details,function (msg) {
+
             res.send(msg)
         })
     }catch (e) {

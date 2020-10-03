@@ -1,5 +1,6 @@
 import * as manipulate from './clientmodules/mani.js'
 import * as templating from './templateBuilders/template.js'
+import * as tableToJSON from './clientmodules/product_attributes.js'
 $(document).ready(function () {
     //function overlay height
     $("#overlay").css('height',$("#banner").height())
@@ -8,6 +9,10 @@ $(document).ready(function () {
 
 
     var g_var_categories=[]
+
+    function product_attribute_change(){
+
+    }
 
     function geoLocate(map) {
         var infoWindow = new google.maps.InfoWindow;
@@ -23,6 +28,7 @@ $(document).ready(function () {
 
 
                 infoWindow.setPosition(pos);
+                map.zoom=15
                 infoWindow.setContent('Estimate');
                 infoWindow.open(map);
                 $("[name=lat]").val(pos.lat)
@@ -188,7 +194,7 @@ $(document).ready(function () {
     }
 
     $('.dataTables_length').addClass('bs-select');
-    $("#locationModal").on('show.bs.modal',function () {
+    function loadMap() {
 
         //remember to move into function
         var map = new google.maps.Map(document.getElementById('map'), {
@@ -213,7 +219,7 @@ $(document).ready(function () {
         $("#geoLocate").on('click',function () {
             geoLocate(map)
         })
-    })
+    }
     $("#locationSettings").on('click',function () {
         $("#locationModal").modal()
     })
@@ -335,7 +341,15 @@ $(document).ready(function () {
         $("#logoInput").trigger('click')
     })
     $("#addItemForm").on("submit",function (e) {
-        e.preventDefault();
+        //show loading gif
+        // $(".loader").css('display','block');
+        // $("#addItem").css("display","none");
+        let attributes = tableToJSON.toJSON("#attrs_table_body")
+
+        $("#attrs_input").val(JSON.stringify(attributes))
+        e.preventDefault()
+
+
         var productId = genRandToken(10,function (token) {
             return token
         })
@@ -343,6 +357,7 @@ $(document).ready(function () {
         $("#productId").val(productId)
         if($("#uploadImage").val()!=='') {
             var fd = new FormData($("#addItemForm").get(0))
+
 
             var dataForTable = $("#addItemForm").serializeArray()
 
@@ -366,13 +381,44 @@ $(document).ready(function () {
                     alert("err")
                 }
 
+            }).done(function (){
+                $(".loader").css('display','none');
+                $("#addItem").css("display","block");
+                $("#attrs_input").val("")
             })
         }else {
             alert("Please upload an image")
         }
     })
+    function addNotifications(){
+
+    }
+    function getNotifications(){
+        $.ajax({
+            url:"/business/notifications?",
+            method:"GET",
+            success:function(res){
+                if(res.response.code===200){
+                    var count = res.response.result.length;
+                    if(count>0) {
+                        $("#notificationCount").text(count)
+                        $("#notificationCount").css("display","block")
+                    }
+                }
+            },
+            error:function (res){
+                console.log(res)
+            }
+
+
+        })
+    }
+
+
     getItemsForSale()
     getAllOrders()
     loadCategories()
     loadCurrencies()
+    getNotifications()
+    loadMap()
 });

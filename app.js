@@ -5,13 +5,13 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var bodyparser = require('body-parser')
 var favicon= require('serve-favicon')
-var indexRouter = require('./routes/index');
+var indexRouter = require(path.join(__dirname,'routes/index'));
 var usersRouter = require('./routes/users');
 var productsRouter = require('./routes/products')
 var categoriesRouter = require('./routes/categories')
 var ordersRouter = require('./routes/orders')
 var businessHubRouter = require('./routes/businessHub')
-
+var jwt = require('express-jwt')
 var app = express();
 
 // view engine setup
@@ -23,9 +23,13 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser("pkiohkgjgy1123sgfgh"));
+// app.use(e_jwt)
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyparser.urlencoded({extended:true}))
-app.use('/', indexRouter);
+
+
+
+app.use('/',indexRouter);
 app.use('/users', usersRouter);
 app.use('/products',productsRouter);
 app.use('/orders',ordersRouter);
@@ -33,6 +37,9 @@ app.use('/business', businessHubRouter);
 app.use('/categories', categoriesRouter);
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
+  // console./log(req)
+  // res.send(req.headers)
+
   next(createError(404));
 });
 
@@ -45,6 +52,8 @@ app.use(function(err, req, res, next) {
   // render the error page
   res.status(err.status || 500);
   res.render('error');
+
 });
+
 
 module.exports = app;

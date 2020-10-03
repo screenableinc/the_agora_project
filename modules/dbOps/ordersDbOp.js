@@ -20,7 +20,7 @@ function getOrders(vendorId, callback) {
     // })
     // var sql = "SELECT orders.orderId, agorans."
     var sql = "SELECT agorans.username,phoneNumber, products.price, productName, orders.* FROM orders JOIN products ON products.productId = orders.productId JOIN agorans ON agorans.username" +
-        " = orders.userId"
+        " = orders.userId WHERE orders.vendorId = "+JSON.stringify(vendorId)
     connection.query(sql,function (err, result) {
         if(err){
             console.log(err)
@@ -31,6 +31,7 @@ function getOrders(vendorId, callback) {
         }
     })
 }
+
 function makeOrder(details,callback) {
     console.log(details)
     var sql="INSERT INTO orders (productId, vendorId, timestamp, quantity,status, userId) VALUES ?"
@@ -38,6 +39,11 @@ function makeOrder(details,callback) {
         if(err){
             throw err;
         }else {
+            //function delete from table...place order despite failure to delete and remind admin to delete
+            genericQueries.del("cart",{productId:details[0][0],username:details[0][details[0].length-1]},function (msg) {
+                console.log(msg)
+            })
+
             return callback({success:true,code:200})
         }
     })

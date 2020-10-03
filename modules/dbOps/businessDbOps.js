@@ -1,6 +1,7 @@
 var connection = require('../dbOps/db.js')
 var genericQueries = require('../dbOps/genericQueries.js');
 var config = require('../CONFIG')
+var parameterize = require('../dbOps/parameterize')
 
 function getBusiness(vendorId,callback) {
     genericQueries.select("*",config.STNs.vendors,"businessId",JSON.stringify(vendorId),function (msg) {
@@ -37,7 +38,7 @@ function authJoin(businessId, businessName, description, mainCategory, password,
     })
 }
 function getTopBrands(callback){
-    var sql  =  "SELECT * FROM orders JOIN businesses ON businesses.businessId = orders.vendorId GROUP BY vendorId ORDER BY SUM (quantity) DESC LIMIT 6"
+    var sql  =  "SELECT * FROM orders JOIN businesses ON businesses.businessId = orders.vendorId GROUP BY vendorId ORDER BY SUM (quantity) ASC LIMIT 6"
     connection.query(sql, function (err, result) {
         if(err){
             console.log(err)
@@ -47,10 +48,29 @@ function getTopBrands(callback){
         }
     })
 }
+function getNotifications(vendorId,read,callback){
+    // var where = (read) ?
+    // TODO fix this...read or unread messages
+    parameterize.alpha_select("*","vendor_notifications",null,{"vendorId":JSON.stringify(vendorId)},null,
+        null,null, function (sql) {
+
+        console.log(sql,"kkkkkk")
+        connection.query(sql, function (err, result) {
+                if(err){
+                    //notify admin
+                    console.log(err)
+                    return callback({code:500})
+                }else {
+                    return callback({code:200,response:result})
+                }
+            })
+        })
+}
 
 module.exports={
     authLogin:authLogin,
     authJoin:authJoin,
     getTopBrands:getTopBrands,
-    getBusiness:getBusiness
+    getBusiness:getBusiness,
+    getNotifications:getNotifications
 }

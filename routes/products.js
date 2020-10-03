@@ -77,6 +77,7 @@ router.get('/categories/all',function (req, res, next) {
 
 router.get('/latest',function (req, res, next) {
     productsDb.getLatestProducts(function (msg) {
+
         res.send(msg)
     })
 })
@@ -94,6 +95,13 @@ router.get('/all',function (req, res, next) {
     }
 });
 
+router.get("/discover", function (req, res, next){
+    var last_timestamp = req.query.last_timestamp
+    productsDb.discover(last_timestamp, function (msg){
+        res.send(msg)
+    })
+})
+
 router.post('/additem', upload.single("image"),async function (req, res, next) {
 
     var cookie = req.signedCookies
@@ -103,6 +111,8 @@ router.post('/additem', upload.single("image"),async function (req, res, next) {
     var productName = req.body.productName
     var genericName = req.body.genericName
     var currency = req.body.currency
+    var attrs = req.body.attrs;
+    // console.log(req.body,"haha")
 
     var deliverable = parseInt(req.body.deliverable);
 
@@ -113,9 +123,10 @@ router.post('/additem', upload.single("image"),async function (req, res, next) {
     }else {
         var businessId = cookie.businessAuth.businessId
         productId = productId+"_"+businessId
-        productsDb.addProduct(businessId,productId,descr,price,deliverable,quantity,barcode, categoryId,productName,genericName,currency,function (msg) {
+        productsDb.addProduct(businessId,productId,descr,price,deliverable,quantity,barcode, categoryId,productName,genericName,currency,attrs,function (msg) {
 
             if(msg.success) {
+
                 store(req, function (good) {
                     (good.success)? res.send(msg):res.send(good)
                 })
@@ -124,6 +135,11 @@ router.post('/additem', upload.single("image"),async function (req, res, next) {
             }
         })
     }
+})
+router.get('/variants',function (req, res, next) {
+    productsDb.variants(function (msg) {
+        res.send(msg)
+    })
 })
 
 router.post("/delete",function (req, res, next) {
@@ -149,8 +165,34 @@ router.get("/images", function (req, res, next) {
             const path = __dirname.replace("routes","images/products/"+imagename);
 
             if (fs.existsSync(path)){
-                //    send file
-                res.sendFile(path)
+                const stat = fs.statSync(path)
+                const fileSize = stat.size
+                const range = req.headers.range
+                if (range) {
+                    const parts = range.replace(/bytes=/, "").split("-")
+                    const start = parseInt(parts[0], 10)
+                    const end = parts[1]
+                        ? parseInt(parts[1], 10)
+                        : fileSize-1
+                    const chunksize = (end-start)+1
+                    const file = fs.createReadStream(path, {start, end})
+                    const head = {
+                        'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+                        'Accept-Ranges': 'bytes',
+                        'Content-Length': chunksize,
+                        'Content-Type': 'image/jpeg',
+                    }
+                    res.writeHead(206, head);
+                    file.pipe(res);
+                } else {
+                    const head = {
+                        'Content-Length': fileSize,
+                        'Content-Type': 'image/jpeg',
+                    }
+                    res.writeHead(200, head)
+                    fs.createReadStream(path).pipe(res)
+                }
+                // res.sendFile(path)
             }else {
                 const path = __dirname.replace("routes","images/products/default.jpg");
                 res.sendFile(path)

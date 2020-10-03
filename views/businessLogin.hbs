@@ -47,7 +47,7 @@
                         <div class="form-box">
                             <div class="form-top">
                                 <div class="form-top-left">
-                                    <h2>Login to our site</h2>
+                                    <h2>login</h2>
                                     <p>Enter username and password to log on:</p>
                                 </div>
                                 <div class="form-top-right">
@@ -86,11 +86,11 @@
                                     <input type="text" hidden id="businessId" name="businessId">
                                     <div class="form-group">
                                         <label class="sr-only" for="businessName">Business name</label>
-                                        <input required type="text" name="businessName" placeholder="e.g Ketchup store" class="form-first-name form-control" id="form-first-name">
+                                        <input required type="text" name="businessName" placeholder="Name e.g Ketchup store" class="form-first-name form-control" id="form-first-name">
                                     </div>
                                     <div class="form-group">
                                         <label class="sr-only" for="email">Email Address</label>
-                                        <input required type="email" name="email" placeholder="Company Email..." class="form-last-name form-control" id="form-last-name">
+                                        <input required type="email" name="email" placeholder="email address" class="form-last-name form-control" id="form-last-name">
                                     </div>
                                     <div class="form-group">
                                         <label class="sr-only" for="category">Category</label>
@@ -100,11 +100,11 @@
                                     </div>
                                     <div class="form-group">
                                         <label class="sr-only" for="password">Password</label>
-                                        <input type="password" name="password" required>
+                                        <input type="password" name="password" class="form-control" required>
                                     </div>
                                     <div class="form-group">
                                         <label class="sr-only" for="description">About the Business</label>
-                                        <textarea required name="description" placeholder="About the business"
+                                        <textarea maxlength="200" required name="description" placeholder="About the business"
                                                   class="form-about-yourself form-control" id="description"></textarea>
                                     </div>
                                     <h5 style="color: red;font-size: small;display: none" class="signuperror">Wrong Username or Password</h5><br>

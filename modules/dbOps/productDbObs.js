@@ -3,6 +3,8 @@ var genericQueries = require('../dbOps/genericQueries.js');
 var parameterizedQueries = require('../dbOps/parameterize.js');
 var config = require('../CONFIG')
 
+
+let sql_business_join = "JOIN businesses ON businesses.businessId = products.vendorId "
 function getCategories(callback) {
     var sql  = "SELECT * FROM "+config.STNs.categories
     connection.query(sql,function (err, result) {
@@ -14,10 +16,10 @@ function getCategories(callback) {
     })
 }
 
-function addProduct(businessId, productId,description, price, deliverable,quantity, barcode,categoryId,productName,genericName,currency,callback){
+function addProduct(businessId, productId,description, price, deliverable,quantity, barcode,categoryId,productName,genericName,currency,attributes,callback){
     var sql = "INSERT INTO products (vendorId, productId, description, price, deliverable," +
-        "quantity, barcode, categoryId, productName, timestamp, genericName,currency) VALUES (?)"
-    var values = [[businessId,productId, description,price,deliverable, quantity,barcode, categoryId,productName, new Date().getTime(), genericName,currency]]
+        "quantity, barcode, categoryId, productName, timestamp, genericName,currency,attributes) VALUES (?)"
+    var values = [[businessId,productId, description,price,deliverable, quantity,barcode, categoryId,productName, new Date().getTime(), genericName,currency,attributes]]
 
     connection.query(sql, values, function (err, result) {
         if(err){
@@ -83,15 +85,19 @@ function getProducts(vendorId,callback){
     })
 }
 function getTopProducts(callback){
-    var sql  =  "SELECT * FROM orders GROUP BY productId ORDER BY SUM (quantity) DESC LIMIT 6"
-    connection.query(sql, function (err, result) {
-        if(err){
-            console.log(err)
-            return callback({success:false,code:500})
-        }else {
-            return callback({success:true, code:200, response:result})
-        }
+    // var sql  =  "SELECT * FROM orders GROUP BY productId ORDER BY SUM (quantity) ASC LIMIT 6"
+    parameterizedQueries.alpha_select(["products.*,currencies.symbol"],"products","JOIN currencies ON currencies.id = products.currency ",{},6,{"GROUP BY":"productId", "ORDER BY": "timestamp"},"ASC",function(sql){
+        connection.query(sql, function (err, result) {
+            console.log(sql)
+            if(err){
+                console.log(err)
+                return callback({success:false,code:500})
+            }else {
+                return callback({success:true, code:200, response:result})
+            }
+        })
     })
+
 }
 
 function getLatestProductsForCategory(where, callback) {
@@ -107,6 +113,29 @@ function getLatestProductsForCategory(where, callback) {
         })
     })
 }
+
+
+function addVariant(variant,callback){
+//    check if variant exists
+    genericQueries.exists("variants",{variant:variant},function (msg) {
+        if(msg.code===403){
+        //    return id
+        }else if(msg.code===100) {
+
+        }
+
+    })
+}
+
+function variants(callback) {
+    connection.query("SELECT * FROM variants",function (err, result) {
+        if(err){
+            return callback({success:false, code:500})
+        }else {
+            return callback({success:true, code:200, response:result})
+        }
+    })
+}
 function deleteProduct(where,callback) {
     parameterizedQueries.deleteEntry("products",where,function (sql) {
         connection.query(sql, function (err, result) {
@@ -119,17 +148,38 @@ function deleteProduct(where,callback) {
         })
     })
 }
+function discover(last_timestamp, callback){
+
+    var where = (last_timestamp==="00") ? {}:{"timestamp":last_timestamp}
+
+    parameterizedQueries.discover_products(["products.*,currencies.symbol,businesses.businessName"],"products","JOIN currencies ON currencies.id = products.currency "+sql_business_join,where,6,{"GROUP BY":"products.productId", "ORDER BY": "timestamp"},"DESC", function (sql){
+        connection.query(sql,function (err, result){
+            console.log(sql)
+            if(err){
+
+                return callback({success:false,code:500,err:err})
+            }else {
+
+                return callback({success:true, code:200, response:result})
+            }
+        })
+    })
+}
 function getLatestProducts(callback){
 
-    var sql  =  "SELECT * FROM products GROUP BY productId ORDER BY timestamp DESC LIMIT 6"
-    connection.query(sql, function (err, result) {
-        if(err){
-            console.log(err)
-            return callback({success:false,code:500})
-        }else {
-            return callback({success:true, code:200, response:result})
-        }
+    parameterizedQueries.alpha_select(["products.*,currencies.symbol,businesses.businessName"],"products","JOIN currencies ON currencies.id = products.currency "+sql_business_join,{},6,{"GROUP BY":"productId", "ORDER BY": "timestamp"},"DESC",function(sql){
+        connection.query(sql, function (err, result) {
+
+            if(err){
+                throw err;
+
+                return callback({success:false,code:500})
+            }else {
+                return callback({success:true, code:200, response:result})
+            }
+        })
     })
+
 }
 module.exports = {
     getCategories:getCategories,
@@ -142,5 +192,7 @@ module.exports = {
     getProduct:getProduct,
     addToCart:addToCart,
     getLatestProductsForCategory:getLatestProductsForCategory,
-    deleteProduct:deleteProduct
+    deleteProduct:deleteProduct,
+    variants:variants,
+    discover:discover
 }
