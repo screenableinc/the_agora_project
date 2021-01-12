@@ -55,12 +55,12 @@ router.post('/join', function(req, res, next) {
 });
 router.get('/cart/view', function(req, res, next) {
   var cookies = req.signedCookies
-
+  console.log(cookies)
   if(cookies===undefined){
-    res.redirect("login")
+    res.redirect("/users/login")
   }else {
-    if(cookies[config.gvs.userAuthTokenName].username===undefined){
-
+    if(cookies[config.gvs.userAuthTokenName]===undefined){
+      res.redirect("/users/login")
     }else {
       res.render("cart",{username:cookies[config.gvs.userAuthTokenName].username});
     }
