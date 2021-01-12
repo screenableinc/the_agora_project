@@ -38,7 +38,7 @@ function authJoin(businessId, businessName, description, mainCategory, password,
     })
 }
 function getTopBrands(callback){
-    var sql  =  "SELECT * FROM orders JOIN businesses ON businesses.businessId = orders.vendorId GROUP BY vendorId ORDER BY SUM (quantity) ASC LIMIT 6"
+    var sql  =  "SELECT vendorId,businessName FROM orders JOIN businesses ON businesses.businessId = orders.vendorId GROUP BY vendorId ORDER BY SUM (quantity) ASC LIMIT 6"
     connection.query(sql, function (err, result) {
         if(err){
             console.log(err)

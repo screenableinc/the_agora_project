@@ -4191,4 +4191,21 @@ blockquote{
 .cent{
     text-align:center;
 }
-
+.section-title h2{
+    color: #ec105a;
+}
+.main-slider{
+    background: #ec105a;
+}
+.main-navbar{
+    background-color: #181818;
+}
+.promo-details{
+    color: white;
+}
+.promo-details-left{
+    margin:auto;
+}
+.promoname{
+    color: white;
+}

@@ -127,7 +127,7 @@ var product_template = "<div style='height: 230px' class=\"product-item\">\n" +
 
     "                    <div style='padding: 10px' class=\"pi-text\">\n" +
     "<h6 id='price'>{{{price}}}</h6>"+
-    "                        <p id=\"name\">{{{productname}}}</p>\n" +
+    "                        <p id=\"name\"></p>\n" +
     "                    </div>\n" +
     "                </div>"
 var store_product="<div class=\"col-lg-3 col-sm-6\">\n" +

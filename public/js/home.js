@@ -38,16 +38,16 @@ $(document).ready(function () {
                         $("#latestProducts").append(templating.genProductTemplate(msg.response[i]))
 
                     }
-                    $('#latestProducts').slick({
-                        dots: true,
-                        slidesToShow:5,
-                        slidesToScroll:2,
-                        infinite: true,
-                        speed: 500,
-                        fade: true,
-                        cssEase: 'linear'
-                    })
-                    // initSlider($('#latestProducts'))
+                    // $('#latestProducts').slick({
+                    //     dots: true,
+                    //     slidesToShow:5,
+                    //     slidesToScroll:2,
+                    //     infinite: true,
+                    //     speed: 500,
+                    //     fade: true,
+                    //     cssEase: 'linear'
+                    // })
+                    initSlider($('#latestProducts'))
                 }
             },
             error:function () {
@@ -61,17 +61,17 @@ $(document).ready(function () {
             url:"/business/top",
             type:"GET",
             success:function (msg) {
-                console.log(msg)
+                var sliderSelector = $("#topBrands")
                 if(msg.code===200){
                     if(msg.response.length>0){
-                        $("#topBrands").empty()
+                        sliderSelector.empty()
                     }
                     for (var i = 0; i < msg.response.length; i++) {
                         $("#topBrands").append(templating.genBrandTemplate(msg.response[i]))
 
                     }
 
-                    // initSlider($("#topBrands"))
+                    initSlider(sliderSelector)
                 }
             },
             error:function (msg) {

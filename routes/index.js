@@ -13,25 +13,25 @@ router.get('/' ,function(req, res, next) {
   var cookies = req.signedCookies;
 
 
-  res.render('index',{})
+  // res.render('index',{})
 
-    // res.send(require('./emailTemplates').candidateJoinEmail)
-  // if(cookies===undefined){
-  //   res.render('home', {title: 'Home'});
-  // }else {
-  //
-  //   if(cookies[config.gvs.userAuthTokenName]===undefined){
-  //     res.render('home', {title: 'Home'});
-  //   }else {
-  //     var userId = cookies[config.gvs.userAuthTokenName].username
-  //     if(userId===undefined){
-  //       res.render('home', {title: 'Home'});
-  //     }else {
-  //       res.render('home',{title:"Home",displayNone:"none"})
-  //     }
-  //
-  //   }
-  // }
+
+  if(cookies===undefined){
+    res.render('home', {title: 'Home'});
+  }else {
+
+    if(cookies[config.gvs.userAuthTokenName]===undefined){
+      res.render('home', {title: 'Home'});
+    }else {
+      var userId = cookies[config.gvs.userAuthTokenName].username
+      if(userId===undefined){
+        res.render('home', {title: 'Home'});
+      }else {
+        res.render('home',{title:"Home",displayNone:"none"})
+      }
+
+    }
+  }
 
 });
 router.get('/currencies/all', function (req, res, next) {
@@ -85,6 +85,7 @@ router.get('/search',function (req, res, next) {
               console.log(msg)
               res.send(msg)
           }else{
+
               res.render('search',{results:JSON.stringify(msg.response)})
 
           }

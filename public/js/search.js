@@ -28,6 +28,8 @@ $(document).ready(function () {
         $("#products").append(templating.genSearchProductTemplate(incoming[i]))
     }
 
+
+
     // if(incoming===""){
     //     console.log(incoming)
     // }else{

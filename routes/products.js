@@ -6,7 +6,7 @@ var multer = require("multer")
 var storage = multer.diskStorage({
     destination:"./images/products/",
     filename:function (req, file, cb) {
-        console.log(JSON.stringify(file))
+
 
 
         var productId = req.body.productId;
