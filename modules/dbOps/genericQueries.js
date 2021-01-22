@@ -58,7 +58,7 @@ function del(table,where,callback) {
 function search(value,where,callback) {
     parameterize.search_products(["products.*", "businesses.businessName","currencies.symbol","locations.*"],where,value,function (sql) {
         console.log(sql)
-        // var sql = "SELECT products.*, businesses.businessName FROM products JOIN businesses ON businesses.businessId = products.vendorId WHERE productName LIKE '%"+value+"%'"
+        var sql = "SELECT products.*, businesses.businessName FROM products JOIN businesses ON businesses.businessId = products.vendorId WHERE productName LIKE '%"+value+"%'"
 
         connection.query(sql, function (err, result) {
             if(err)throw err;

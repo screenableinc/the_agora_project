@@ -11,14 +11,14 @@ var productsRouter = require('./routes/products')
 var categoriesRouter = require('./routes/categories')
 var ordersRouter = require('./routes/orders')
 var businessHubRouter = require('./routes/businessHub')
-var jwt = require('express-jwt')
+var jwt = require('jsonwebtoken')
 var app = express();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
 app.use(favicon(path.join(__dirname,'public','images','favicon.ico')));
-
+app.set('secretKey','ChenniMyLove')
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -30,7 +30,7 @@ app.use(bodyparser.urlencoded({extended:true}))
 
 
 app.use('/',indexRouter);
-app.use('/users', usersRouter);
+app.use('/users', validateUser,usersRouter);
 app.use('/products',productsRouter);
 app.use('/orders',ordersRouter);
 app.use('/business', businessHubRouter);
@@ -43,6 +43,29 @@ app.use(function(req, res, next) {
   next(createError(404));
 });
 
+//validation
+
+function validateUser(req, res, next) {
+  var token = (req.token == null) ?  req.signedCookies['x-access-token'] : req.token
+  jwt.verify(token, req.app.get('secretKey'), function(err, decoded) {
+    if (err) {
+      if(req.url==='/login' || req.url==='/join'){
+        next()
+      }else {
+        console.log(req.headers)
+        res.json({status: "error", message: err.message, data: null});
+      }
+    }else{
+      // add user id to request
+
+
+      req.body.userId = decoded.id;
+      req.body.type= decoded.category;
+      next();
+    }
+  });
+
+}
 // error handler
 app.use(function(err, req, res, next) {
   // set locals, only providing error in development

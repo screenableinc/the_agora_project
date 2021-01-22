@@ -1,6 +1,9 @@
 var connection = require('../dbOps/db.js')
 var config = require('../CONFIG')
 var genericQueries = require('../dbOps/genericQueries.js');
+var bcrypt = require('bcrypt')
+var jwt = require('jsonwebtoken');
+var parameterizedQueries = require('../dbOps/parameterize.js');
 function userExists(username, phoneNumber, emailAddress,callback){
     var sql  = "SELECT * from agorans WHERE username = '"+ username +"' OR phoneNumber = '"+ phoneNumber +"' " +
         "OR emailAddress ='"+ emailAddress +"'"
@@ -28,7 +31,26 @@ function authLogin(identifier,password, callback) {
         }
     })
 }
+
+function followVendor(username, vendorId, callback){
+    var sql = "Insert into user_fav_vendors (vendorId, userId) values ?"
+    connection.query(sql, [vendorId, username], function (err, result){
+        if(err) throw err;
+        return callback({success:true, message:null, code:200})
+
+    })
+}
+function getVendorsFollowing(username,vendorId,callback){
+    parameterizedQueries.alpha_select(["vendorId"], "user_fav_vendors", null, {userId: username}, null,null,null, function(sql){
+        connection.query(sql, function (err, result){
+            if (err)throw err;
+            return callback({code:200, response: result})
+        })
+    })
+}
+
 function authJoin(username, emailAddress, phoneNumber,password,fullName,countryCode, callback) {
+
     userExists(username, phoneNumber,emailAddress, function (exists) {
             if(exists){
                 //furher specifiy which params are bad
@@ -38,12 +60,13 @@ function authJoin(username, emailAddress, phoneNumber,password,fullName,countryC
                 var sql = "INSERT into agorans (username, emailAddress, phoneNumber, password,fullName, " +
                     "" +
                     "countryCode) VALUES (?)"
-                var values = [username, emailAddress,phoneNumber,password,fullName,countryCode]
+                var values = [username, emailAddress,phoneNumber,bcrypt.hashSync(password,10),fullName,countryCode]
                 connection.query(sql,[values],function (err, result) {
                     if(err){
                      return callback({success:false, code:500, response:err})
                     }
                     else {
+
                         return callback({success: true, code:100,response:result})
                     }
                 })
@@ -83,7 +106,7 @@ function store_picture() {
 }
 module.exports = {
     authLogin:authLogin,authJoin:authJoin,
-    addToCart:addToCart,getCart:getCart
+    addToCart:addToCart,getCart:getCart, followVendor:followVendor, getVendorsFollowing:getVendorsFollowing
 
 }
 

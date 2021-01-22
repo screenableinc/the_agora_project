@@ -3,7 +3,7 @@ var router = express.Router();
 var userDb = require('../modules/dbOps/usersDbOp.js')
 var cookieMgr = require('../modules/cookieManager.js')
 var config = require("../modules/CONFIG")
-
+var jwt  = require('jsonwebtoken');
 /* GET users listing. */
 router.get('/login', function(req, res, next) {
 
@@ -19,9 +19,7 @@ router.post('/login', function(req, res, next) {
   userDb.authLogin(identifier, password,function (msg) {
       if (msg.code===100){
         // sign cookie
-        cookieMgr.set(res,"userAuth",{username:msg.response.username},60048000000,function () {
-          res.send(msg)
-        })
+
 
       }else {
         res.send(msg)
@@ -39,11 +37,12 @@ router.post('/join', function(req, res, next) {
   var password = req.body.password;
   userDb.authJoin(username,emailAddress,phoneNumber,password,fullName,cc,function (msg) {
     if(msg.code===100){
-      cookieMgr.set(res,"userAuth",{username:username},6004800000,function () {
-        console.log("cookie set")
-        console.log(msg)
+      const token = jwt.sign({id:username, category: "user"},req.app.get('secretKey'), {expiresIn:'7d'})
+
+      cookieMgr.set(res,"x-access-token",token,60048000000,function () {
         res.send(msg)
       })
+
     }else {
       console.log(msg)
       res.send(msg)
@@ -54,51 +53,57 @@ router.post('/join', function(req, res, next) {
 
 });
 router.get('/cart/view', function(req, res, next) {
-  var cookies = req.signedCookies
-  console.log(cookies)
-  if(cookies===undefined){
-    res.redirect("/users/login")
-  }else {
-    if(cookies[config.gvs.userAuthTokenName]===undefined){
-      res.redirect("/users/login")
-    }else {
-      res.render("cart",{username:cookies[config.gvs.userAuthTokenName].username});
-    }
-  }
+
+  // if(cookies===undefined){
+  //   res.redirect("/users/login")
+  // }else {
+  //   if(cookies[config.gvs.userAuthTokenName]===undefined){
+  //     res.redirect("/users/login")
+  //   }else {
+      res.render("cart",{username:req.body.id});
+    // }
+  // }
 
 });
 router.get('/cart/items',function (req, res, next) {
-  var cookies = req.signedCookies
-  if(cookies===undefined){
-    res.send({success:false,code:403})
-  }else {
-    var username = cookies[config.gvs.userAuthTokenName]
-    if(username===undefined){
-      res.send({success:false,code:403})
-    }else {
-      userDb.getCart(username.username,function (msg) {
+
+      userDb.getCart(req.body.userId,function (msg) {
+        console.log(msg,"PPP")
         res.send(msg)
       })
-    }
-  }
+
+});
+router.post('/follow/vendor',function (req, res, next){
+//  call db function
+    userDb.followVendor(req.body.userId, req.body.vendorId, function (msg){
+        res.send(msg)
+    })
 })
+
+router.post('/follow/user',function (req, res, next){
+//  call db function
+
+})
+
+router.get('/following/users',function (req, res, next){
+
+})
+
+router.get('/following/vendors',function(req, res, next){
+
+})
+
 router.post('/cart/add',function (req, res, n) {
   var cookies = req.signedCookies
   var productId = req.body.productId
-  if(cookies===undefined){
-    res.send({success:false,code:403})
-  }else {
-    var username = cookies[config.gvs.userAuthTokenName]
-    if(username===undefined){
-      res.send({success:false})
-    }else {
-      username=username.username
-      userDb.addToCart(username,productId,function (msg) {
+
+
+
+      userDb.addToCart(req.body.userId,productId,function (msg) {
         console.log(msg)
         res.send(msg)
       })
-    }
-  }
+
 })
 router.get('/activity', function(req, res, next) {
   res.send('respond with a resource');

@@ -136,7 +136,7 @@ function alpha_select(ret_cols, table,join ,where, limit,aggregates, order, call
             return " LIMIT "+limit
         }
     }
-    "businesses ON businesses.businessId = products.vendorId"
+
     var join_q = function () {
         if(join===null){
             return ""

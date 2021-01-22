@@ -32,6 +32,7 @@ $("#signUpForm").on("submit",function (e) {
         success:function (msg) {
             if(msg.code===100){
             //    continue to home
+
                 window.location.replace("/")
 
             }else {

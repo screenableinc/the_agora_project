@@ -164,7 +164,7 @@ var search_product="<div class=\"result row\">\n" +
     "                    </div>\n" +
     "                </li>\n" +
     "                <li class=\"result-li right\">\n" +
-    "                <h3 class=\"price\">K 2,054</h3>\n" +
+    "                <h6 class=\"price\">K 2,054</h6>\n" +
     "\n" +
     "                    <h6 class='vendor'>Company</h6>\n" +
     "                    <h5>24 km away</h5>\n" +
@@ -201,10 +201,30 @@ function addToCart(productId) {
         }
     })
 }
+function follow(vendorId){
+    $.ajax({
+        url:"/users/follow/vendor",
+        type:"POST",
+        data:{vendorId:vendorId},
+        success:function (msg) {
+            if(msg.code===200){
+                //    add
+                alert("success")
+            }else if(msg.code===403){
+
+                    window.location.href='/users/login'
+
+            }
+        },error:function (msg) {
+            //
+            alert ("error")
+        }
+    })
+}
 
 export function genSearchProductTemplate(details) {
     var template = $(search_product)
-    console.log(details)
+
     template.find('img').attr('src',productImgPrefix+details.productId)
     template.find('.price').text(price(details.price))
     template.find('.name').text(details.productName)
@@ -228,7 +248,8 @@ export function genProductTemplate(details) {
     template.find("#name").text(details.productName)
     template.find("#goToVendor").attr('href',"/business?vendorId="+details.vendorId)
     template.find("img").on("click",function (e) {
-        window.location.replace("/products/product/?productId="+details.productId);
+        alert("/products/product/?productId="+details.productId)
+        window.location.href = "/products/product/?productId="+details.productId;
     })
     template.find("#price").text("ZMK "+price(details.price))
     return template
@@ -238,7 +259,7 @@ export function storeProductTemplate(details) {
     template.find("img").attr('src',"/products/images?productId="+details.productId)
     template.find("#name").text(details.productName)
     template.find("img").on("click",function (e) {
-        window.location.replace("/products/product/?productId="+details.productId);
+        window.location.href("/products/product/?productId="+details.productId);
     })
     template.find("#price").text("ZMK "+details.price)
     return template

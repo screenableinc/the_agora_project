@@ -16,11 +16,17 @@
     min-width: 23%;
     height: 140px;
     float: left;
-    text-align: end;
+    display: block;
+
+    text-align: center;
+
 
 }
 .result img{
-    width: auto;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+
     height: initial;
 
 

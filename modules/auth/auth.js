@@ -1,4 +1,14 @@
 var config = require("../CONFIG")
+var bcrypt = require('bcrypt')
+function authenticate(){
+
+}
+function setJWT(){
+
+}
+function create(){
+
+}
 class auth_check {
     constructor (req,type){
         //0 for business 1 for user
