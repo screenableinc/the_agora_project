@@ -13,7 +13,7 @@
 html,
 body {
 	height: 100%;
-	font-family: 'Josefin Sans', sans-serif;
+	font-family: HelveticaNeue,Helvetica Neue,Helvetica,Arial,sans-serif;;
 	-webkit-font-smoothing: antialiased;
 	font-smoothing: antialiased;
 }
@@ -131,7 +131,7 @@ ol {
 	font-weight: 600;
 	min-width: 167px;
 	padding: 18px 47px 14px;
-	border-radius: 50px;
+
 	text-transform: uppercase;
 	background: #f51167;
 	color: #fff;
@@ -1007,12 +1007,12 @@ ol {
 ---------------------*/
 
 .footer-section {
-	background: #282828;
+	/*background: #282828;*/
 	padding-top: 60px;
 }
 
 .footer-logo {
-	padding-bottom: 60px;
+	padding-bottom: 0px;
 
 }
 .footer-section img{
@@ -1132,7 +1132,7 @@ ol {
 }
 
 .social-links-warp {
-	border-top: 2px solid #3b3535;
+	border-top: 1px solid #e3e2e2;
 	padding: 46px 0;
 }
 
@@ -1147,7 +1147,7 @@ ol {
 
 .social-links a i {
 	font-size: 30px;
-	color: #d7d7d7;
+
 	float: left;
 	margin-right: 19px;
 	overflow: hidden;
@@ -1155,13 +1155,21 @@ ol {
 	-o-transition: all 0.3s;
 	transition: all 0.3s;
 }
-
+.social-links a i.instagram{
+	color: #db4545;
+}
+.social-links a i.facebook{
+	color: #0190d7;
+}
+.social-links a i.twitter{
+	color: #519dd7;
+}
 .social-links a span {
 	display: inline-block;
 	font-size: 12px;
 	font-weight: 600;
 	text-transform: uppercase;
-	color: #9f9fa0;
+	color: #404040;
 	padding-top: 10px;
 	-webkit-transition: all 0.3s;
 	-o-transition: all 0.3s;
@@ -1201,7 +1209,7 @@ ol {
 }
 
 .social-links a:hover span {
-	color: #fff;
+	color: #161616;
 }
 
 /* --------------
@@ -1578,6 +1586,12 @@ ol {
 
 .product-details .p-rating i {
 	color: #f51167;
+}
+.fa-star-o{
+	color: #ea2c6d;
+}
+.fa-star-o.checked{
+
 }
 
 .product-details .p-rating i.fa-fade {
@@ -2458,4 +2472,37 @@ ol {
 	text-overflow: ellipsis;
 	max-lines: 1;
 
+}
+.attributes .attribute select, label{
+	display: inline-block;
+}
+.product_title{
+	display: inline-block;
+	font-size: 30px;
+	
+	/*new:*/
+
+	line-height: 34px;
+	height: 35px;
+}
+.product-big-img{
+	border: 2px solid #e1e1e1;
+}
+.site-btn{
+	border: 2px solid #f51167
+}
+.site-btn.buy{
+	background-color: white;
+	border: 2px solid #f51167;
+	color: #f51167;
+}
+.product-details.seller-info{
+	border:1px solid #e3e2e2;;
+	border-radius: 3px;
+	padding: 6px;
+}
+.btn.follow{
+ border-radius: 0px;
+	background-color:#f51167 ;
+	color: #ffffff;
 }

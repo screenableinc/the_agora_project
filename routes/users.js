@@ -17,11 +17,17 @@ router.post('/login', function(req, res, next) {
 
   var password = req.body.password;
   userDb.authLogin(identifier, password,function (msg) {
+        console.log(msg,password)
       if (msg.code===100){
         // sign cookie
+          const token = jwt.sign({id:identifier, category: "user"},req.app.get('secretKey'), {expiresIn:'7d'})
 
+          cookieMgr.set(res,"x-access-token",token,60048000000,function () {
+              res.send(msg)
+          })
 
       }else {
+          console.log(msg)
         res.send(msg)
       }
 

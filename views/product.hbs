@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="zxx">
 <head>
-    <title>Divisima | eCommerce Template</title>
+    <title>Vendnbuy</title>
     <meta charset="UTF-8">
     <!--	<meta name="description" content=" Divisima | eCommerce Template">-->
     <!--	<meta name="keywords" content="divisima, eCommerce, creative, html">-->
@@ -51,9 +51,9 @@
     <div class="container">
 
         <div class="row">
-            <div class="col-lg-6">
+            <div  class="col-lg-4">
                 <div class="product-pic-zoom">
-                    <img id="productImage" class="product-big-img" src={{imageurl}} alt="">
+                    <img style="border-radius: 3px;" id="productImage" class="product-big-img" src={{imageurl}} alt="">
                 </div>
                 <div class="product-thumbs" tabindex="1" style="overflow: hidden; outline: none;">
 <!--                    <div class="product-thumbs-track">-->
@@ -64,72 +64,52 @@
 <!--                    </div>-->
                 </div>
             </div>
-            <div class="col-lg-6 product-details">
-                <h2 class="p-title" id="name"></h2>
-                <h3 class="p-price" id="price"></h3>
-                <h3 class="p-price" id="deliverable"></h3>
+            <div class="col-lg-5 product-details">
+                <div class="name-section">
+                <h2 class="product_title" id="name"></h2>
+                    <p class="description"></p>
+                    <hr>
+                </div>
+                <div class="attributes">
+
+
+                </div>
+
+
 
                 <h4 class="p-stock">Available: <span id="stock"></span> <span>In Stock</span></h4>
-
-                <div class="p-rating">
-                    <i class="fa fa-star-o"></i>
-                    <i class="fa fa-star-o"></i>
-                    <i class="fa fa-star-o"></i>
-                    <i class="fa fa-star-o"></i>
-                    <i class="fa fa-star-o fa-fade"></i>
+                <h4 class="p-stock">Deliverable: <span id="deliverable"></span></h4>
+                <div class="payment-list">
+                <h3 class="p-stock">Payment Options: <span><img height="35px" src="/images/cashondelivery.png" alt=""> </span> </h3>
                 </div>
-<!--                <div class="p-review">-->
-<!--                    <a href="">3 reviews</a>|<a href="">Add your review</a>-->
+                    <h3 class="p-price">Price: <span class="payment-icon"></span> <span id="price"></span></h3>
+
+
+
+                <a href="#" class="site-btn">Add to Cart</a>
+                <a href="#" class="site-btn buy">Buy It Now</a>
+
+<!--                <div class="social-sharing">-->
+<!--                    <a href=""><i class="fa fa-google-plus"></i></a>-->
+<!--                    <a href=""><i class="fa fa-pinterest"></i></a>-->
+<!--                    <a href=""><i class="fa fa-facebook"></i></a>-->
+<!--                    <a href=""><i class="fa fa-twitter"></i></a>-->
+<!--                    <a href=""><i class="fa fa-youtube"></i></a>-->
 <!--                </div>-->
-<!--                <div class="fw-size-choose">-->
-<!--                    <p>Size</p>-->
-<!--                    <div class="sc-item">-->
-<!--                        <input type="radio" name="sc" id="xs-size">-->
-<!--                        <label for="xs-size">32</label>-->
-<!--                    </div>-->
-<!--                    <div class="sc-item">-->
-<!--                        <input type="radio" name="sc" id="s-size">-->
-<!--                        <label for="s-size">34</label>-->
-<!--                    </div>-->
-<!--                    <div class="sc-item">-->
-<!--                        <input type="radio" name="sc" id="m-size" checked="">-->
-<!--                        <label for="m-size">36</label>-->
-<!--                    </div>-->
-<!--                    <div class="sc-item">-->
-<!--                        <input type="radio" name="sc" id="l-size">-->
-<!--                        <label for="l-size">38</label>-->
-<!--                    </div>-->
-<!--                    <div class="sc-item disable">-->
-<!--                        <input type="radio" name="sc" id="xl-size" disabled>-->
-<!--                        <label for="xl-size">40</label>-->
-<!--                    </div>-->
-<!--                    <div class="sc-item">-->
-<!--                        <input type="radio" name="sc" id="xxl-size">-->
-<!--                        <label for="xxl-size">42</label>-->
-<!--                    </div>-->
-<!--                </div>-->
-
-                <a href="#" class="site-btn">add to cart</a>
-                <div id="accordion" class="accordion-area">
-                    <div class="panel">
-                        <div class="panel-header" id="headingOne">
-                            <button class="panel-link active" data-toggle="collapse" data-target="#collapse1" aria-expanded="true" aria-controls="collapse1">information</button>
-                        </div>
-                        <div id="collapse1" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
-                            <div class="panel-body">
-                                {{description}}
-                            </div>
-                        </div>
-                    </div>
-
+            </div>
+            <div class="col-lg-3 product-details seller-info">
+                <h4 class="p-stock">Business Name: <span class="vendorname"></span></h4>
+                <h4 class="p-stock">Deliverable: <span id="deliverable"></span></h4>
+                <div class="rating">
+                <span class="fa fa-star-o"></span>
+                <span class="fa fa-star-o"></span>
+                <span class="fa fa-star-o"></span>
+                <span class="fa fa-star-o"></span>
+                <span class="fa fa-star-o"></span>
+                    <span class="p-stock" id="reviews"><a href=""><span id="count"></span> reviews</a></span>
+                    
                 </div>
-                <div class="social-sharing">
-                    <a href=""><i class="fa fa-google-plus"></i></a>
-                    <a href=""><i class="fa fa-pinterest"></i></a>
-                    <a href=""><i class="fa fa-facebook"></i></a>
-                    <a href=""><i class="fa fa-twitter"></i></a>
-                    <a href=""><i class="fa fa-youtube"></i></a>
-                </div>
+                <button class="btn follow">Follow</button>
             </div>
         </div>
     </div>
@@ -149,7 +129,33 @@
 
 <!-- Footer section end -->
 
+<section class="footer-section">
+    <div class="container">
 
+
+    </div>
+
+    <div class="social-links-warp">
+
+        <div class="container">
+            <div class="footer-logo text-center">
+                <a href="/"><img src="/img/logo_s.png" alt=""></a>
+            </div>
+            <div class="social-links text-center">
+                <a href="https://www.instagram.com/vendnbuy/" class="instagram"><i class="fa fa-instagram"></i><span>instagram</span></a>
+<!--                <a href="" class="google-plus"><i class="fa fa-google-plus"></i><span>g+plus</span></a>-->
+<!--                <a href="" class="pinterest"><i class="fa fa-pinterest"></i><span>pinterest</span></a>-->
+                <a href="" class="facebook"><i class="fa fa-facebook"></i><span>facebook</span></a>
+                <a href="" class="twitter"><i class="fa fa-twitter"></i><span>twitter</span></a>
+
+<!--                <a href="" class="tumblr"><i class="fa fa-tumblr-square"></i><span>tumblr</span></a>-->
+            </div>
+
+            <p class="text-white text-center mt-5">Copyright ©<script type="text/javascript" async="" src="https://www.google-analytics.com/analytics.js"></script><script>document.write(new Date().getFullYear());</script> All rights reserved</p>
+
+        </div>
+    </div>
+</section>
 
 <!--====== Javascripts & Jquery ======-->
 <script src="/js/jquery-3.2.1.min.js"></script>
@@ -161,7 +167,7 @@
 <script src="/js/jquery-ui.min.js"></script>
 <script src="/js/main.js"></script>
 <script src="/js/nav.js"></script>
-<script src="/js/product.js"></script>
+<script type="module" src="/js/product.js"></script>
 
 </body>
 </html>

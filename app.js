@@ -11,6 +11,8 @@ var productsRouter = require('./routes/products')
 var categoriesRouter = require('./routes/categories')
 var ordersRouter = require('./routes/orders')
 var businessHubRouter = require('./routes/businessHub')
+var checkoutRouter = require('./routes/checkout')
+
 var jwt = require('jsonwebtoken')
 var app = express();
 
@@ -35,6 +37,7 @@ app.use('/products',productsRouter);
 app.use('/orders',ordersRouter);
 app.use('/business', businessHubRouter);
 app.use('/categories', categoriesRouter);
+app.use('/checkout',validateUser,checkoutRouter)
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   // console./log(req)
@@ -49,19 +52,22 @@ function validateUser(req, res, next) {
   var token = (req.token == null) ?  req.signedCookies['x-access-token'] : req.token
   jwt.verify(token, req.app.get('secretKey'), function(err, decoded) {
     if (err) {
+
       if(req.url==='/login' || req.url==='/join'){
         next()
       }else {
-        console.log(req.headers)
-        res.json({status: "error", message: err.message, data: null});
+        res.redirect("/users/login")
       }
     }else{
       // add user id to request
 
-
-      req.body.userId = decoded.id;
-      req.body.type= decoded.category;
-      next();
+      if(req.url==='/login' || req.url==='/join'){
+        next()
+      }else {
+        req.body.userId = decoded.id;
+        req.body.type = decoded.category;
+        next();
+      }
     }
   });
 

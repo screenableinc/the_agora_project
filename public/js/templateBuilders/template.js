@@ -115,6 +115,50 @@ var template = $("<div class=\"col-lg-3 col-sm-6\">\n" +
 
 }
 
+var checkout_product = "<li>\n" +
+    "                            <div class=\"pl-thumb\"><img id='thumb-img' src=\"img/cart/1.jpg\" alt=\"\"></div>\n" +
+    "                            <h6 id='name'></h6>\n" +
+    "                            <p id='price'></p>\n" +
+    "                        </li>"
+function checkoutPricing(items) {
+
+}
+
+export function fillCart(cartItems) {
+    console.log(cartItems)
+    //create list of all businesses bought from
+    var stores_involved = {}
+    var total=0;
+    for (var i = 0; i <cartItems.length ; i++) {
+
+        var html = $(checkout_product)
+
+        if(stores_involved[cartItems[i].businessName]===undefined){
+            //add an Li
+            var li = $("<li rel=''><span style='margin-right: 0px'></span></li>")
+            li.attr("rel",cartItems[i].businessName), li.text(cartItems[i].businessName)
+            li.append("<span>"+cartItems[i].price+"</span>")
+            $(".price-list").append(li)
+            stores_involved[cartItems[i].businessName]=cartItems[i].price
+        }else {
+            var li = $('.price-list').find("[rel='" + cartItems[i].businessName + "']")
+
+            li.find("span").text(parseInt(li.find("span").text())+parseInt(cartItems[i].price))
+            li.find("span").text(price(li.find("span").text()))
+            stores_involved[cartItems[i].businessName]=stores_involved[cartItems[i].businessName] + cartItems[i].price
+        }
+
+        html.find("#thumb-img").attr("src",productImgPrefix+cartItems[i].productId)
+        html.find("#name").text(cartItems[i].productName)
+        html.find("#price").text(cartItems[i].symbol+ price(cartItems[i].price))
+        $(".product-list").append(html)
+        total=total+parseInt(cartItems[i].price);
+    }
+    $('.grand-total').text(price(total))
+
+
+}
+
 var product_template = "<div style='height: 230px' class=\"product-item\">\n" +
     "                    <div class=\"pi-pic\" style='height: 75%'>\n" +
     "                        \n" +
@@ -341,3 +385,61 @@ export function genItemsTemplate(details){
     return row;
 
 }
+
+
+
+
+
+
+
+var product = "<div class=\"attribute\">\n" +
+    "                    <label>Select</label>\n" +
+    "                    <span><select class=\"form-control\" name=\"\" rel=\"\"></span>\n" +
+    "\n" +
+    "                    </select>\n" +
+    "                    </div>" +
+    ""
+
+export function organise_attributes(attr_json, exc_attr, exc_val){
+
+    var attrs = attr_json.attrs
+    $(".attributes").empty()
+
+    for (var i = 0; i < attrs.length ; i++) {
+        if(attrs[i].toLowerCase()==='qty'){
+            continue
+        }
+        var product_attribute=$(product)
+        product_attribute.find("label").text(attrs[i])
+        product_attribute.find("label").attr("for",attrs[i])
+        product_attribute.find("select").attr("name",attrs[i])
+        var select  = product_attribute.find("select")
+    //    pit options
+        var variations = attr_json.variations
+
+        for (var j = 0; j < variations.length; j++) {
+            if(exc_val !== null && exc_attr!==null) {
+                if (variations[j][exc_attr] !== exc_val) {
+                    continue
+                }
+            }
+            var option = $("<option value=''></option>")
+            option.attr("value", variations[j][attrs[i]])
+            option.text(variations[j][attrs[i]])
+            select.append(option)
+        }
+        product_attribute.append(select)
+        select.on("change",function (e){
+            console.log(e, this)
+            filter(this,attr_json)
+        })
+        $(".attributes").append(product_attribute)
+    }
+
+
+}
+function filter(changed,attrs_json){
+    organise_attributes(attrs_json,$(changed).attr('name'), $(changed).val())
+}
+
+

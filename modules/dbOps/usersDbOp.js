@@ -18,15 +18,23 @@ function userExists(username, phoneNumber, emailAddress,callback){
 }
 function authLogin(identifier,password, callback) {
     var sql  = "SELECT * from agorans WHERE username = '"+ identifier +"' OR phoneNumber = '"+ identifier +"' " +
-        "OR emailAddress ='"+ identifier +"' AND password = '"+ password +"'"
+        "OR emailAddress ='"+ identifier+"'"
     connection.query(sql, function (err, result) {
+        console.log(bcrypt.hashSync(password,10))
         if (err){
             return callback({success:false,response:err, code:500})
         }else {
             if(result.length===0){
                 return callback({success:false, code: 403})
             }else {
-                return callback({success:true, code:100, response:result[0]})
+
+                if(bcrypt.compareSync(password, result[0].password)){
+                    return callback({success:true, code:100, response:result[0]})
+                }else {
+                    return callback({success:false, code:402})
+                }
+
+
             }
         }
     })
@@ -67,6 +75,7 @@ function authJoin(username, emailAddress, phoneNumber,password,fullName,countryC
                     }
                     else {
 
+
                         return callback({success: true, code:100,response:result})
                     }
                 })
@@ -74,6 +83,7 @@ function authJoin(username, emailAddress, phoneNumber,password,fullName,countryC
         }
     )
 }
+
 function addToCart(username,productId,callback) {
     var sql = "INSERT INTO cart (productId,username) VALUES (?)"
     var values =[[productId,username]]
@@ -87,15 +97,22 @@ function addToCart(username,productId,callback) {
     })
 }
 function getCart(username, callback) {
-    var sql = "SELECT * FROM cart JOIN products ON products.productId = cart.productId WHERE username = "+ JSON.stringify(username) +" ";
-    connection.query(sql,function (err, result) {
-        if(err){
-            return callback({success:false,code:500})
-        }else {
-            //getting username piggy backed off of this function
-            return callback({success:true, response:result,code:200,username:username})
-        }
-    })
+    // var sql = "SELECT * FROM cart JOIN products ON products.productId = cart.productId WHERE username = "+ JSON.stringify(username) +" ";
+
+    parameterizedQueries.alpha_select(["cart.*","products.*","currencies.*","businesses.businessName"],"cart", "JOIN products ON products.productId = cart.productId JOIN currencies ON currencies.id = products.currency JOIN businesses ON businesses.businessId = products.vendorId ",
+        {username:username},null,null,null,function (sql) {
+        console.log(sql)
+        connection.query(sql,function (err, result) {
+                if(err){
+                    return callback({success:false,code:500})
+                }else {
+                    //getting username piggy backed off of this function
+                    return callback({success:true, response:result,code:200,username:username})
+                }
+            })
+        })
+
+
     // genericQueries.select("*",config.STNs.cart,"username",JSON.stringify(username),function (msg) {
     //     return callback(msg)
     // })

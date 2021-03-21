@@ -62,6 +62,7 @@ $("#loginForm").on("submit",function (e) {
             success: function (msg) {
                 if (msg.code===100){
                 //    redirect to login
+                    window.location.href = "/"
                 }else if(msg.code===403){
                 //    user not found
                     $("#wrong").css("display","block")
