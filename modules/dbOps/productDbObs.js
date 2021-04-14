@@ -29,12 +29,27 @@ async function insertInProductTable(sql, values){
     })
 
 }
+async function insertInVariationPriceAndQuantity(prices,quantities){
+    return await new Promise(function(resolve, reject){
+        connection.query("INSERT INTO variation_prices (variationId, price) VALUES ?", [prices],function (err, result) {
+            if(err) reject(err);
+
+            connection.query("INSERT INTO variation_quantities (variationId, quantity) VALUES ? ",[quantities], function (err, res) {
+                if(err) reject(err);
+                resolve()
+            })
+
+        })
+    })
+}
 
 async function insertInVariationsTable(variations, productId, quantity,price){
 
     return new Promise(function (resolve, reject) {
-        var sql = "INSERT INTO variations (variationId, productId, variantName, value, price, quantity) VALUES ?"
+        var sql = "INSERT INTO variations (variationId, productId, variantName, value) VALUES ?"
         var main_arr = []
+        //arrays to store price and quantity variations
+        var p_var_arr=[];var q_var_arr=[]
         for (var i = 0; i < variations.length; i++) {
             //    create keys
             var variationId = genRandToken(6,function (token) {
@@ -43,38 +58,50 @@ async function insertInVariationsTable(variations, productId, quantity,price){
             var keys = Object.keys(variations[i])
 
             var different_price=0.0; var different_qty=0;
-            console.log(keys)
+
             for (var j = 0; j < keys.length; j++) {
                 var array = []
-                if(keys[j].trim().toLowerCase() !== "price" || keys[j].trim().toLowerCase() !== "qty" ){
-                    console.log(keys[j])
-                    array[0]=variationId;array[1]=productId;array[2]=keys[j].toLowerCase();
-                    array[3]=variations[i][keys[j]]
+                console.log("pause",keys[j].trim().toLowerCase())
+                "price"
+                if(keys[j].trim().toLowerCase() !== "price"){
+                    if(keys[j].trim().toLowerCase() !== "qty") {
+                        array[0] = variationId;
+                        array[1] = productId;
+                        array[2] = keys[j].toLowerCase();
+                        array[3] = variations[i][keys[j]]
+                    }
                     //THis is a fail safe...incase price and quantity are not provided
                 }else if(keys[j].trim().toLowerCase() === "price"){
                     different_price = variations[i][keys[j]]
                 }else if(keys[j].trim().toLowerCase() === "qty"){
                     different_qty = variations[i][keys[j]]
                 }
-                array[5] = (variations[i]['qty'] === undefined || variations[i]['Qty'] ===undefined)? quantity:different_qty
-                array[4] = (variations[i]['price'] === undefined || variations[i]['Price'] ===undefined ) ? price:different_price
-                main_arr.push(array)
+                quantity = (variations[i]['qty'] === undefined || variations[i]['Qty'] ===undefined)? quantity:different_qty
+                price = (variations[i]['price'] === undefined || variations[i]['Price'] ===undefined ) ? price:different_price
+
+                // i really hope this works...Please God
+                if(array.length===4) {
+                    main_arr.push(array)
+                }
             }
+            p_var_arr.push([variationId,price]);q_var_arr.push([variationId,quantity]);
 
-            //fail safe continues
-
-
-
-            console.log(2)
+        //    i hope this works
 
 
         }
-        console.log(main_arr)
+
+
         connection.query(sql,[main_arr],function (err, res) {
             if(err){
-                console.log(err)
+
                 reject({success: false,code:500})
             }else {
+                insertInVariationPriceAndQuantity(p_var_arr,q_var_arr).then(result=>{
+
+                }).catch(err=>{
+                    console.log(err)
+                })
 
                 resolve({success:true, code:200})
             }
@@ -109,56 +136,7 @@ function addProduct(businessId, productId,description, price, deliverable,quanti
                 })
 
         })
-        // connection.query(sql, values, async function (err, result) {
-        //     if(err){
-        //         console.log(err)
-        //         return callback({success:false, code:500,response:err})
-        //     }else {
-        //         //insert variations
-        //       var response =   await (function () {
-        //             var sql = "INSERT INTO variations (variationId, productId, variantName, value, price, quantity) VALUES (?)"
-        //
-        //           var main_arr = []
-        //             for (var i = 0; i < variations.length; i++) {
-        //             //    create keys
-        //                 var variationId = ""
-        //                 var keys = Object.keys(variations[i])
-        //                 var array = []
-        //                 var different_price; var different_qty;
-        //                 for (var j = 0; j < keys; j++) {
-        //                     if(keys[j].trim().toLowerCase() !== "price" || keys[j].trim().toLowerCase() !== "qty" ){
-        //                         array[0]=variationId;array[1]=productId;array[2]=keys[j].toLowerCase();
-        //                         array[3]=variations[i][keys[j]]
-        //                     //THis is a fail safe...incase price and quantity are not provided
-        //                     }else if(keys[j].trim().toLowerCase() === "price"){
-        //                         different_price = variations[i][keys[j]]
-        //                     }else if(keys[j].trim().toLowerCase() === "qty"){
-        //                         different_qty = variations[i][keys[j]]
-        //                     }
-        //
-        //                 }
-        //
-        //                 //fail safe continues
-        //                 array[5] = (variations[i]['qty'] === null || variations[i]['Qty'] ===null)? quantity:different_qty
-        //                 array[4] = (variations[i]['price'] === null || variations[i]['Price'] ===null ) ? price:different_price
-        //
-        //                 main_arr.push(array)
-        //             //    create variables
-        //
-        //             }
-        //             connection.query(sql,main_arr,function (err, res) {
-        //                 if(err){
-        //
-        //                     return {success: false,code:500}
-        //                 }else {
-        //                     console.log("failed here")
-        //                     return {success:true, code:200}
-        //                 }
-        //             })
-        //         })()
-        //         return callback(response)
-        //     }
-        // })
+
     }).catch((msg)=>{
         console.log(msg)
         return callback({success:false, code:500, response: msg})
@@ -204,7 +182,16 @@ function getImageIdentifier(productId, callback) {
     })
 
 }
+function getVariations(productId, callback){
+    var sql = "SELECT * FROM variations WHERE productId = '"+productId+"'"
+    console.log("eeeee",sql)
+    connection.query(sql, function (err, result) {
+        if(err) {
 
+            throw err};
+        return callback({success:true, response:result})
+    })
+}
 function getProduct(productId, callback) {
     parameterizedQueries.alpha_select(['products.*,currencies.*, businesses.businessId, businesses.businessName'],config.STNs.products, "JOIN businesses ON businesses.businessId = products.vendorId JOIN currencies ON currencies.id = products.currency ", {productId: productId},null,null,null,function (sql){
         connection.query(sql, function (err, result){
@@ -407,5 +394,6 @@ module.exports = {
     variants:variants,
     discover:discover,
     getReviews:getReviews,
-    insertTags:insertTags
+    insertTags:insertTags,
+    getVariations:getVariations
 }

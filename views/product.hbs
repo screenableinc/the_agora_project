@@ -10,11 +10,15 @@
     <link href="img/favicon.ico" rel="shortcut icon"/>
 
     <!-- Google Font -->
-    <link href="https://fonts.googleapis.com/css?family=Josefin+Sans:300,300i,400,400i,700,700i" rel="stylesheet">
 
+
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons">
 
     <!-- Stylesheets -->
-    <link rel="stylesheet" href="/stylesheets/bootstrap.min.css"/>
+<!--    <link rel="stylesheet" href="/stylesheets/bootstrap.min.css"/>-->
+    <!-- CSS only -->
+<!--    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">-->
+    <link rel="stylesheet" href="/stylesheets/material-dashboard.css">
     <link rel="stylesheet" href="/stylesheets/font-awesome.min.css"/>
     <link rel="stylesheet" href="/stylesheets/flaticon.css"/>
     <link rel="stylesheet" href="/stylesheets/slicknav.min.css"/>
@@ -74,20 +78,29 @@
 
 
                 </div>
+                <div class="row">
+                    <div class="col-lg-4">
+                        <h4 class="p-stock">Available: <span id="stock"></span> <span>In Stock</span></h4>
+                        <h4 class="p-stock">Deliverable: <span id="deliverable"></span></h4>
+                        <div class="payment-list">
+                            <h3 class="p-stock">Payment Options: <span><img height="35px" src="/images/cashondelivery.png" alt=""> </span> </h3>
 
-
-
-                <h4 class="p-stock">Available: <span id="stock"></span> <span>In Stock</span></h4>
-                <h4 class="p-stock">Deliverable: <span id="deliverable"></span></h4>
-                <div class="payment-list">
-                <h3 class="p-stock">Payment Options: <span><img height="35px" src="/images/cashondelivery.png" alt=""> </span> </h3>
+                        </div>
                 </div>
-                    <h3 class="p-price">Price: <span class="payment-icon"></span> <span id="price"></span></h3>
+                    <div class="col-lg-8">
+                        <h3 class="p-price">Price: <span class="payment-icon"></span> <span id="price"></span></h3>
+                        <a href="#" class="site-btn">Add to Cart</a>
+                        <a href="#" class="site-btn buy">Buy It Now</a>
+                    </div>
+
+
+                </div>
 
 
 
-                <a href="#" class="site-btn">Add to Cart</a>
-                <a href="#" class="site-btn buy">Buy It Now</a>
+
+<!--                <a href="#" class="site-btn">Add to Cart</a>-->
+<!--                <a href="#" class="site-btn buy">Buy It Now</a>-->
 
 <!--                <div class="social-sharing">-->
 <!--                    <a href=""><i class="fa fa-google-plus"></i></a>-->

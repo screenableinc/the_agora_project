@@ -54,7 +54,13 @@ function store(req, callback){
 
 }
 var upload = multer({storage:storage})
+router.get('/variations', function (req, res, next) {
+    var productId = req.query.productId;
 
+    productsDb.getVariations(productId, function (msg) {
+        res.send(msg)
+    })
+})
 router.get('/product', function (req, res, next) {
     var productId = req.query.productId;
     productsDb.getProduct(productId,function (msg) {
@@ -165,7 +171,14 @@ router.get("/images", function (req, res, next) {
             const path = __dirname.replace("routes","images/products/default.jpg");
             res.sendFile(path)
         }else {
-            var imagename =  msg.response[0].identifier+".jpg"
+            console.log(productId,"kkkkk")
+            var imagename;
+            try {
+                imagename =  msg.response[0].identifier+".jpg"
+            }catch (e) {
+                imagename="default.jpg"
+            }
+
 
 
             const path = __dirname.replace("routes","images/products/"+imagename);

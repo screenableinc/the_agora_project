@@ -11,7 +11,7 @@ export function ajax(url, method, data,callback) {
         }
     })
 }
-function price(price) {
+export function price(price) {
     price=String(parseFloat(String(price)).toFixed(2))
     var decimals = price.substr(price.length-3)
     price=price.slice(0, -3);
@@ -400,41 +400,179 @@ var product = "<div class=\"attribute\">\n" +
     "                    </div>" +
     ""
 
-export function organise_attributes(attr_json, exc_attr, exc_val){
+export class sort_attributes{
 
-    var attrs = attr_json.attrs
-    $(".attributes").empty()
+    constructor(attrs) {
 
-    for (var i = 0; i < attrs.length ; i++) {
-        if(attrs[i].toLowerCase()==='qty'){
-            continue
-        }
-        var product_attribute=$(product)
-        product_attribute.find("label").text(attrs[i])
-        product_attribute.find("label").attr("for",attrs[i])
-        product_attribute.find("select").attr("name",attrs[i])
-        var select  = product_attribute.find("select")
-    //    pit options
-        var variations = attr_json.variations
+        this.attrs=attrs
+        this.variantNames=[]
+        this.attr_reorg={}
+        let self=this
 
-        for (var j = 0; j < variations.length; j++) {
-            if(exc_val !== null && exc_attr!==null) {
-                if (variations[j][exc_attr] !== exc_val) {
-                    continue
-                }
+        for (let i = 0; i < attrs.length; i++) {
+            //create reorganised json of attrs
+            var variantName = attrs[i].variantName
+            var variantValue = attrs[i].value
+            var variationId = attrs[i].variationId
+            if(this.attr_reorg[variantName]===undefined){
+            //    add it to object
+                this.attr_reorg[variantName]={}
+            //    create selector for variant name
+                let selectParent = $("<div class='col-sm-10'></div>")
+                let select = $("<select class='customSelector'></select>")
+                selectParent.append(select)
+                let div = $("<div class='form-group row'></div>")
+
+                let label =$("<label class='col-sm-2 col-form-label'></label>")
+                select.attr("id", variantName);select.attr("name", variantName);
+                label.attr("for", variantName);label.text(variantName+":")
+                div.append(label);div.append(selectParent)
+                let option = $("<option value='0'>Select</option>")
+                select.append(option)
+                select.on('click', function (){
+
+                    self.clearDisabled(select)
+                    self.filterOptions(select)
+
+                })
+                $(".attributes").append(div)
             }
-            var option = $("<option value=''></option>")
-            option.attr("value", variations[j][attrs[i]])
-            option.text(variations[j][attrs[i]])
-            select.append(option)
+
+            if(this.attr_reorg[variantName][variantValue]===undefined){
+            //    create and add variation Id
+                this.attr_reorg[variantName][variantValue]=[variationId]
+            //    add option here
+                let option = $("<option></option>")
+                option.attr("value", variantValue);option.text(variantValue)
+                $("#"+variantName).append(option)
+            }else {
+            //    just add variation Id
+                this.attr_reorg[variantName][variantValue].push(variationId)
+            }
+            this.variantNames.indexOf(variantName)===-1 ? this.variantNames.push(variantName) :""
+
         }
-        product_attribute.append(select)
-        select.on("change",function (e){
-            console.log(e, this)
-            filter(this,attr_json)
-        })
-        $(".attributes").append(product_attribute)
+
     }
+    filterOptions(select){
+        // loop through remaining selectors and get value
+    //    if value is 0 then no options have been clicked
+
+
+
+        var selectorArray = $.find("select").filter(e => e !== select[0])
+
+        var chosen = {}
+
+        for (let i = 0; i < selectorArray.length; i++) {
+            if($(selectorArray[i]).val()!=="0"){
+                // get selector and selected option
+                let attribute = $(selectorArray[i]).attr("id")
+                let value = $(selectorArray[i]).val();
+                chosen[attribute]=this.attr_reorg[attribute][value]
+
+
+            }
+        }
+        let options = $(select[0]).find("option")
+        let selectedAttr = $(select[0]).attr("id")
+
+        for (let i = 0; i < options.length; i++) {
+            let option = $(options[i])
+            if(option.attr("value")!=="0"){
+               let value = option.val()
+
+                // console.log("inner",)
+                //of these options find one with an attr that has a variation id present in the selected ones
+                let comparisonArray = []
+
+                for (let j = 0; j < Object.keys(chosen).length; j++) {
+                   
+                    comparisonArray.push(chosen[Object.keys(chosen)[j]])
+                }
+                let shouldInclude =this.attr_reorg[selectedAttr][value]
+                comparisonArray.push(shouldInclude)
+
+                // shouldMatch.push(shouldInclude)
+                let result = comparisonArray.shift().filter(function(v) {
+                    return comparisonArray.every(function(a) {
+                        return a.indexOf(v) !== -1;
+                    });
+                });
+               if(result.length===0){
+                   option.attr("disabled","true")
+               }else {
+                   option.removeAttr("disabled")
+               }
+                //check if all selectors have values
+
+                
+                // for (let j = 0; j < shouldMatch.length; j++) {
+                //     if (!shouldInclude.includes(shouldMatch[j])){
+                //         option.attr("disabled","true")
+                //     }
+                // }
+            }
+        }
+
+    }
+    addOptions(selector) {
+
+    }
+    clearDisabled(selected){
+        let options = $(selected).find("option")
+        console.log("cleared",options)
+        // options.each(e=>{$(e).removeAttr("disabled")})
+    }
+
+
+}
+
+
+export function organise_attributes(attrs, exc_attr, exc_val){
+    var variantNames=[]
+    for (let i = 0; i < attrs.length; i++) {
+
+        var newItem = attrs[i].variantName
+
+        variantNames.indexOf(newItem)===-1 ? variantNames.push(newItem) :""
+
+    }
+    // createSelectors(variantNames)
+
+    // var attrs = attr_json.attrs
+    // $(".attributes").empty()
+    //
+    // for (var i = 0; i < attrs.length ; i++) {
+    //     if(attrs[i].toLowerCase()==='qty'){
+    //         continue
+    //     }
+    //     var product_attribute=$(product)
+    //     product_attribute.find("label").text(attrs[i])
+    //     product_attribute.find("label").attr("for",attrs[i])
+    //     product_attribute.find("select").attr("name",attrs[i])
+    //     var select  = product_attribute.find("select")
+    // //    pit options
+    //     var variations = attr_json.variations
+    //
+    //     for (var j = 0; j < variations.length; j++) {
+    //         if(exc_val !== null && exc_attr!==null) {
+    //             if (variations[j][exc_attr] !== exc_val) {
+    //                 continue
+    //             }
+    //         }
+    //         var option = $("<option value=''></option>")
+    //         option.attr("value", variations[j][attrs[i]])
+    //         option.text(variations[j][attrs[i]])
+    //         select.append(option)
+    //     }
+    //     product_attribute.append(select)
+    //     select.on("change",function (e){
+    //         console.log(e, this)
+    //         filter(this,attr_json)
+    //     })
+    //     $(".attributes").append(product_attribute)
+    // }
 
 
 }
