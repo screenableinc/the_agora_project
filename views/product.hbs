@@ -39,7 +39,7 @@
 <div id="preloder">
     <div class="loader"></div>
 </div>
-
+<input id="variationId" type="hidden">
 <!-- Header section -->
 <header id="header" class="header-section">
 
@@ -78,18 +78,26 @@
 
 
                 </div>
+                <div class="quantity">
+                    <div class="pro-qty">
+                        <input id="q_input" type="text" value="1">
+                        </div>
+                </div>
                 <div class="row">
                     <div class="col-lg-4">
                         <h4 class="p-stock">Available: <span id="stock"></span> <span>In Stock</span></h4>
                         <h4 class="p-stock">Deliverable: <span id="deliverable"></span></h4>
                         <div class="payment-list">
-                            <h3 class="p-stock">Payment Options: <span><img height="35px" src="/images/cashondelivery.png" alt=""> </span> </h3>
+                            <h3 class="p-stock">Payment Options: <span><img height="35px" src="/images/cashondelivery.png" alt=""> </span>
+
+                                <span><img height="35px" src="/images/visa.png" alt=""> </span>
+                            </h3>
 
                         </div>
                 </div>
                     <div class="col-lg-8">
-                        <h3 class="p-price">Price: <span class="payment-icon"></span> <span id="price"></span></h3>
-                        <a href="#" class="site-btn">Add to Cart</a>
+                        <h3 class="p-price">Price: <span id="currency">K</span> <span id="price"></span></h3>
+                        <a href="#" id="addtocart" class="site-btn">Add to Cart</a>
                         <a href="#" class="site-btn buy">Buy It Now</a>
                     </div>
 

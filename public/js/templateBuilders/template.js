@@ -237,6 +237,7 @@ function addToCart(productId) {
                 if(msg.err===1062){
 
                 }else {
+                //    todo:: fix this...it might not be an auth error causing it to fail
                 window.location.href='/users/login'
             }
             }
@@ -408,11 +409,17 @@ export class sort_attributes{
         this.variantNames=[]
         this.attr_reorg={}
         let self=this
+        this.other={}
 
         for (let i = 0; i < attrs.length; i++) {
             //create reorganised json of attrs
+            console.log(attrs[i])
             var variantName = attrs[i].variantName
             var variantValue = attrs[i].value
+            //horrible code but i'm tired
+            this.other[attrs[i].variationId]={}
+            this.other[attrs[i].variationId]["quantity"]= attrs[i]["quantity"]
+            this.other[attrs[i].variationId]["price"]= attrs[i]["price"]
             var variationId = attrs[i].variationId
             if(this.attr_reorg[variantName]===undefined){
             //    add it to object
@@ -429,11 +436,16 @@ export class sort_attributes{
                 div.append(label);div.append(selectParent)
                 let option = $("<option value='0'>Select</option>")
                 select.append(option)
-                select.on('click', function (){
+
+                select.on('focus', function (e){
 
                     self.clearDisabled(select)
                     self.filterOptions(select)
 
+
+                })
+                select.on('change', function (e) {
+                    self.checkQuantity()
                 })
                 $(".attributes").append(div)
             }
@@ -444,6 +456,7 @@ export class sort_attributes{
             //    add option here
                 let option = $("<option></option>")
                 option.attr("value", variantValue);option.text(variantValue)
+
                 $("#"+variantName).append(option)
             }else {
             //    just add variation Id
@@ -452,6 +465,56 @@ export class sort_attributes{
             this.variantNames.indexOf(variantName)===-1 ? this.variantNames.push(variantName) :""
 
         }
+
+    }
+    checkQuantity(){
+
+        var selectorArray = $.find("select");
+        let comparisonArray = []
+        let allFilled = true
+        for (let i = 0; i < selectorArray.length; i++) {
+            if($(selectorArray[i]).val()!=="0"){
+                // get selector and selected option
+                let attribute = $(selectorArray[i]).attr("id")
+                let value = $(selectorArray[i]).val();
+                comparisonArray.push(this.attr_reorg[attribute][value])
+
+
+
+            }else {
+                allFilled=false
+            }
+        }
+
+        let quantity = 0
+
+        let variationIds = comparisonArray.shift().filter(function(v) {
+            return comparisonArray.every(function(a) {
+                return a.indexOf(v) !== -1;
+            });
+        });
+
+        for (let i = 0; i < variationIds.length; i++) {
+            let varId = variationIds[i]
+            let qty = this.other[varId]["quantity"]
+
+            quantity = quantity+qty
+
+        }
+        $("#stock").text(quantity)
+
+        if(allFilled===true){
+            $("#variationId").val(variationIds[0])
+        }else {
+            $("#variationId").val("")
+        }
+
+        if(variationIds.length===1){
+            if(this.other[variationIds[0]]["price"]!==undefined){
+                $("#price").text(price(this.other[variationIds[0]]["price"]))
+            }
+        }
+
 
     }
     filterOptions(select){
@@ -476,6 +539,7 @@ export class sort_attributes{
         }
         let options = $(select[0]).find("option")
         let selectedAttr = $(select[0]).attr("id")
+
 
         for (let i = 0; i < options.length; i++) {
             let option = $(options[i])
@@ -504,14 +568,10 @@ export class sort_attributes{
                }else {
                    option.removeAttr("disabled")
                }
-                //check if all selectors have values
 
-                
-                // for (let j = 0; j < shouldMatch.length; j++) {
-                //     if (!shouldInclude.includes(shouldMatch[j])){
-                //         option.attr("disabled","true")
-                //     }
-                // }
+
+
+
             }
         }
 
@@ -521,9 +581,10 @@ export class sort_attributes{
     }
     clearDisabled(selected){
         let options = $(selected).find("option")
-        console.log("cleared",options)
+
         // options.each(e=>{$(e).removeAttr("disabled")})
     }
+
 
 
 }
@@ -538,41 +599,6 @@ export function organise_attributes(attrs, exc_attr, exc_val){
         variantNames.indexOf(newItem)===-1 ? variantNames.push(newItem) :""
 
     }
-    // createSelectors(variantNames)
-
-    // var attrs = attr_json.attrs
-    // $(".attributes").empty()
-    //
-    // for (var i = 0; i < attrs.length ; i++) {
-    //     if(attrs[i].toLowerCase()==='qty'){
-    //         continue
-    //     }
-    //     var product_attribute=$(product)
-    //     product_attribute.find("label").text(attrs[i])
-    //     product_attribute.find("label").attr("for",attrs[i])
-    //     product_attribute.find("select").attr("name",attrs[i])
-    //     var select  = product_attribute.find("select")
-    // //    pit options
-    //     var variations = attr_json.variations
-    //
-    //     for (var j = 0; j < variations.length; j++) {
-    //         if(exc_val !== null && exc_attr!==null) {
-    //             if (variations[j][exc_attr] !== exc_val) {
-    //                 continue
-    //             }
-    //         }
-    //         var option = $("<option value=''></option>")
-    //         option.attr("value", variations[j][attrs[i]])
-    //         option.text(variations[j][attrs[i]])
-    //         select.append(option)
-    //     }
-    //     product_attribute.append(select)
-    //     select.on("change",function (e){
-    //         console.log(e, this)
-    //         filter(this,attr_json)
-    //     })
-    //     $(".attributes").append(product_attribute)
-    // }
 
 
 }

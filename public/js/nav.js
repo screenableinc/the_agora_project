@@ -55,6 +55,7 @@ $(document).ready(function () {
         }
     }
     function req(url,type,callback) {
+        console.log(url,"wise")
         $.ajax({
             url:url,
             type:type,
@@ -74,9 +75,10 @@ $(document).ready(function () {
 
     }
     function getCart() {
-        req("/users/cart/items","GET",function (msg) {
+        req("/users/cart","GET",function (msg) {
+            console.log(msg)
             if(msg.code===200){
-                $("#cartItemCount").text(msg.response.length)
+                $("#cartItemCount").text(msg.response)
                 $("#username").text(msg.username)
                 $("#signInOption").css("display","none")
             }

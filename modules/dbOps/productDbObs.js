@@ -47,7 +47,9 @@ async function insertInVariationsTable(variations, productId, quantity,price){
 
     return new Promise(function (resolve, reject) {
         var sql = "INSERT INTO variations (variationId, productId, variantName, value) VALUES ?"
+        let insert_q = "INSERT INTO variationtable (variationId) VALUES ?"
         var main_arr = []
+        let variationIds = []
         //arrays to store price and quantity variations
         var p_var_arr=[];var q_var_arr=[]
         for (var i = 0; i < variations.length; i++) {
@@ -55,14 +57,19 @@ async function insertInVariationsTable(variations, productId, quantity,price){
             var variationId = genRandToken(6,function (token) {
                 return token+"_"+productId
             })
+
+            if (!variationIds.includes(variationId)){
+                variationIds.push([variationId])
+            }
+            console.log(i)
+
+            console.log(i,variations,"wise")
             var keys = Object.keys(variations[i])
 
             var different_price=0.0; var different_qty=0;
 
             for (var j = 0; j < keys.length; j++) {
                 var array = []
-                console.log("pause",keys[j].trim().toLowerCase())
-                "price"
                 if(keys[j].trim().toLowerCase() !== "price"){
                     if(keys[j].trim().toLowerCase() !== "qty") {
                         array[0] = variationId;
@@ -86,26 +93,36 @@ async function insertInVariationsTable(variations, productId, quantity,price){
             }
             p_var_arr.push([variationId,price]);q_var_arr.push([variationId,quantity]);
 
+
+
         //    i hope this works
 
 
         }
 
-
-        connection.query(sql,[main_arr],function (err, res) {
+        connection.query(insert_q,[variationIds], function (err, res) {
             if(err){
-
-                reject({success: false,code:500})
+                reject(err)
             }else {
-                insertInVariationPriceAndQuantity(p_var_arr,q_var_arr).then(result=>{
+                connection.query(sql,[main_arr],function (err, res) {
+                    if(err){
 
-                }).catch(err=>{
-                    console.log(err)
+                        reject({success: false,code:500})
+                    }else {
+                        insertInVariationPriceAndQuantity(p_var_arr,q_var_arr).then(result=>{
+
+                        }).catch(err=>{
+                            console.log(err)
+                        })
+
+                        resolve({success:true, code:200})
+                    }
                 })
-
-                resolve({success:true, code:200})
             }
         })
+
+
+
     })
 
 }
@@ -128,12 +145,15 @@ function addProduct(businessId, productId,description, price, deliverable,quanti
         var values = [[businessId,productId, description,price,deliverable, quantity,barcode, categoryId,productName, new Date().getTime(), tag,currency]]
         insertInProductTable(sql,values).then(result=>{
 
-                insertInVariationsTable(variations.variations,productId,quantity,price).then(result=>{
-                    return callback(result)
-                }).catch(msg=>{
-                    console.log(msg)
-                    return callback(msg)
-                })
+
+                    insertInVariationsTable(variations.variations,productId,quantity,price).then(result=>{
+                        return callback(result)
+                    }).catch(msg=>{
+                        console.log(msg)
+                        return callback(msg)
+                    })
+
+
 
         })
 
@@ -183,8 +203,8 @@ function getImageIdentifier(productId, callback) {
 
 }
 function getVariations(productId, callback){
-    var sql = "SELECT * FROM variations WHERE productId = '"+productId+"'"
-    console.log("eeeee",sql)
+    var sql = "SELECT * FROM variations JOIN variation_quantities ON variations.variationId = variation_quantities.variationId JOIN variation_prices ON variations.variationId = variation_prices.variationId WHERE productId = '"+ productId + "'"
+
     connection.query(sql, function (err, result) {
         if(err) {
 

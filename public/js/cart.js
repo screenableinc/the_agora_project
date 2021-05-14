@@ -69,7 +69,9 @@ $(document).ready(function () {
         type:"GET",
         success:function (msg) {
             if(msg.code===200){
+                console.log(msg.response)
                 for (var i = 0; i <msg.response.length ; i++) {
+
 
                     $("#cartItems").append(templating.cartItemTemplate(msg.response[i]))
                 }

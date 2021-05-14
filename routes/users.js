@@ -74,11 +74,17 @@ router.get('/cart/view', function(req, res, next) {
 router.get('/cart/items',function (req, res, next) {
 
       userDb.getCart(req.body.userId,function (msg) {
-        console.log(msg,"PPP")
+
         res.send(msg)
       })
 
 });
+router.get('/cart', function (req, res, next) {
+    userDb.cartCount(req.body.userId, function (msg) {
+        msg["username"]=req.body.userId
+        res.send(msg)
+    })
+})
 router.post('/follow/vendor',function (req, res, next){
 //  call db function
     userDb.followVendor(req.body.userId, req.body.vendorId, function (msg){
@@ -102,11 +108,11 @@ router.get('/following/vendors',function(req, res, next){
 router.post('/cart/add',function (req, res, n) {
   var cookies = req.signedCookies
   var productId = req.body.productId
+    var variantId =req.body.variationId
 
 
+      userDb.addToCart(req.body.userId,productId,variantId,function (msg) {
 
-      userDb.addToCart(req.body.userId,productId,function (msg) {
-        console.log(msg)
         res.send(msg)
       })
 
