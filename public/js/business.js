@@ -93,7 +93,7 @@ $(document).ready(function () {
     }
     function getItemsForSale() {
         $.ajax({
-            url:"/products/all",
+            url:"products/all",
             type:"GET",
             success: function (msg) {
                 if(msg.success){
@@ -120,7 +120,7 @@ $(document).ready(function () {
             url:"/orders/all",
             type:"GET",
             success: function (msg) {
-                console.log(msg)
+
                 if(msg.success){
                     if(msg.response.length!==0){
                         $("#ordersTableBody").empty()

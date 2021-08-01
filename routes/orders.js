@@ -10,8 +10,8 @@ router.post('/order',function (req, res, next) {
     var details = JSON.parse(req.body.details);
 
     try {
-        var username = req.signedCookies[config.gvs.userAuthTokenName].username
-        ordersDb.makeOrder(details,function (msg) {
+        let username = req.body.username;
+        ordersDb.makeOrder(details,username,function (msg) {
 
             res.send(msg)
         })
@@ -20,6 +20,9 @@ router.post('/order',function (req, res, next) {
     }
 
 
+})
+router.get('/checkout', function (req, res, next) {
+    res.render('checkout')
 })
 
 
@@ -30,7 +33,7 @@ router.post('/accept',function () {
 })
 router.get('/all',function (req, res, next) {
     try {
-        var businessId = req.signedCookies[config.gvs.businessAuthTokenName].businessId;
+        var businessId = req.body.businessId;
         ordersDb.getOrders(businessId,function (msg) {
             res.send(msg)
         })

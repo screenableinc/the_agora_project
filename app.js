@@ -34,8 +34,8 @@ app.use(bodyparser.urlencoded({extended:true}))
 app.use('/',indexRouter);
 app.use('/users', validateUser,usersRouter);
 app.use('/products',productsRouter);
-app.use('/orders',ordersRouter);
-app.use('/business', businessHubRouter);
+app.use('/orders',validateBusiness,ordersRouter);
+app.use('/business', validateBusiness,businessHubRouter);
 app.use('/categories', categoriesRouter);
 app.use('/checkout',validateUser,checkoutRouter)
 // catch 404 and forward to error handler
@@ -47,6 +47,30 @@ app.use(function(req, res, next) {
 });
 
 //validation
+
+function validateBusiness(req, res, next){
+  var token = (req.token == null) ?  req.signedCookies['businessAuth'] : req.token
+  jwt.verify(token, req.app.get('secretKey'), function(err, decoded) {
+    if (err) {
+
+      if(req.url==='/login' || req.url==='/join'){
+        next()
+      }else {
+        res.redirect("/business/login")
+      }
+    }else{
+      // add user id to request
+
+      if(req.url==='/login' || req.url==='/join'){
+        next()
+      }else {
+        req.body.businessId = decoded.id;
+        req.body.type = decoded.category;
+        next();
+      }
+    }
+  });
+}
 
 function validateUser(req, res, next) {
   var token = (req.token == null) ?  req.signedCookies['x-access-token'] : req.token

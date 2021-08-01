@@ -20,7 +20,7 @@ router.post('/login', function(req, res, next) {
         console.log(msg,password)
       if (msg.code===100){
         // sign cookie
-          const token = jwt.sign({id:identifier, category: "user"},req.app.get('secretKey'), {expiresIn:'7d'})
+          const token = jwt.sign({id:identifier, category: "user"},    )
 
           cookieMgr.set(res,"x-access-token",token,60048000000,function () {
               res.send(msg)
@@ -50,7 +50,7 @@ router.post('/join', function(req, res, next) {
       })
 
     }else {
-      console.log(msg)
+
       res.send(msg)
     }
   })
@@ -116,6 +116,12 @@ router.post('/cart/add',function (req, res, n) {
         res.send(msg)
       })
 
+})
+router.post('/cart/delete', function (req, res, next) {
+
+    userDb.deleteItemFromCart(req.body.userId,req.body.productId,req.body.variationId, function (response) {
+        res.send(response)
+    })
 })
 router.get('/activity', function(req, res, next) {
   res.send('respond with a resource');

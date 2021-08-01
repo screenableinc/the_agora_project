@@ -49,6 +49,7 @@ function followVendor(username, vendorId, callback){
 
     })
 }
+
 function getVendorsFollowing(username,vendorId,callback){
     parameterizedQueries.alpha_select(["vendorId"], "user_fav_vendors", null, {userId: username}, null,null,null, function(sql){
         connection.query(sql, function (err, result){
@@ -116,19 +117,90 @@ function cartCount(username, callback){
         }
     })
 }
+
+function deleteItemFromCart(username, productId, variationId, callback) {
+    let sql = "DELETE FROM cart WHERE username="+username+" AND productId ="+productId+" AND variationId="+variationId
+    connection.query(sql, function (err, res){
+        if (err) throw err;
+        return callback({success:true})
+    })
+}
+
+async function getVariations(results){
+    return new Promise(async function (resolve, reject) {
+        let ret_arr = []
+        //loop through array of product ids
+        // console.log(results[2])
+        for (let i = 0; i < results.length; i++) {
+
+            let result = results[i]
+            console.log(result["variationId"],i)
+
+            if(result.variationId==='00'){
+                //variation id is null, return row as is
+                ret_arr.push(result)
+            }else {
+                //    get from data
+
+
+
+                await new Promise(function (reso, rej) {
+                    connection.query("SELECT variantName, value FROM variations WHERE productId='"+result.productId+"' AND variationId='"+result.variationId+"'", function (err, res) {
+
+                        if(err){rej(err)
+                        }else {
+                            var arr = []
+
+                            for (let j = 0; j < res.length; j++) {
+                                arr.push({name:res[j].variantName,value:res[j].value})
+                            }
+                            reso(arr)
+
+                        }
+
+
+                    })
+
+                }).then(r=>{
+                    result.variations=r
+                    ret_arr.push(result)
+                    console.log("no err", r)
+                }).catch(err=>{
+                    console.log("err")
+                    ret_arr.push(result)
+                })
+
+
+
+            console.log("worked")
+
+
+        }
+    }
+        resolve(ret_arr)
+})
+}
 function getCart(username, callback) {
     // var sql = "SELECT * FROM cart JOIN products ON products.productId = cart.productId WHERE username = "+ JSON.stringify(username) +" ";
-
-    parameterizedQueries.alpha_select(["cart.*","products.*","currencies.*","businesses.businessName, variations.*"],"cart", " JOIN variations ON cart.variationId = variations.variationId OR cart.variationId IS NULL JOIN products ON products.productId = cart.productId JOIN currencies ON currencies.id = products.currency JOIN businesses ON businesses.businessId = products.vendorId ",
+    //todo:: Warning callback hell ahead
+    parameterizedQueries.alpha_select(["cart.*","products.*","currencies.*","businesses.businessName"],"cart", " JOIN products ON products.productId = cart.productId JOIN currencies ON currencies.id = products.currency JOIN businesses ON businesses.businessId = products.vendorId ",
         {username:username},null,null,null,function (sql) {
-        console.log(sql,"ddddd")
-        connection.query(sql + "GROUP BY cart.variationId",function (err, result) {
+        
+        connection.query(sql ,function (err, result) {
                 if(err){
-                    console.log(err)
+
                     return callback({success:false,code:500})
                 }else {
-                    //getting username piggy backed off of this function
-                    return callback({success:true, response:result,code:200,username:username})
+
+                    //getting username piggy backed off of this callback
+                    //pass result to variations function
+                    getVariations(result).then(result=>{
+
+                        return callback({success:true, response:result,code:200,username:username})
+                    }).catch(err=>{
+                        throw err
+                    })
+
                 }
             })
         })
@@ -143,7 +215,7 @@ function store_picture() {
 //cdn
 }
 module.exports = {
-    authLogin:authLogin,authJoin:authJoin,
+    authLogin:authLogin,authJoin:authJoin,deleteItemFromCart:deleteItemFromCart,
     addToCart:addToCart,getCart:getCart, followVendor:followVendor, getVendorsFollowing:getVendorsFollowing, cartCount:cartCount
 
 }

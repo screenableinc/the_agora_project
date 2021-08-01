@@ -2544,6 +2544,9 @@ ol {
 [disabled="true"]{
 	background: #a8a8a8;
 }
+.small-text{
+	font-size: 11px;
+}
 /*.customSelector{*/
 /*	height: inherit;*/
 /*	vertical-align: center;*/

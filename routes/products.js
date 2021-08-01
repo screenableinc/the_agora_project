@@ -3,57 +3,10 @@ var router = express.Router();
 var productsDb = require('../modules/dbOps/productDbObs.js')
 var fs = require("fs")
 var multer = require("multer")
-var storage = multer.diskStorage({
-    destination:"./images/products/",
-    filename:function (req, file, cb) {
-
-
-
-        var productId = req.body.productId;
-        var businessId = req.signedCookies.businessAuth.businessId
-
-        var identifier = Date.now()+productId
-        productId=productId+"_"+businessId;
-
-        _filename = identifier+".jpg";
-        productsDb.addProductImageIdentifier(identifier,productId,function (msg) {
-            if(msg.code===200){
-                cb(null, _filename)
-            }else {
-
-                cb(null,"")
-            }
-        })
 
 
 
 
-    }
-})
-
-function store(req, callback){
-    var productId = req.body.productId;
-    var businessId = req.signedCookies.businessAuth.businessId
-
-    var identifier = Date.now()+productId
-    productId=productId+"_"+businessId;
-
-    var _filename = identifier+".jpg";
-    productsDb.addProductImageIdentifier(identifier,productId,function (msg) {
-        if(msg.code===200){
-        //    store file
-            var data=Buffer.from(req.body.image.split('base64,')[1],'base64')
-
-            fs.writeFileSync(__dirname.replace("routes","images/products/"+_filename),data)
-            return callback({success: true})
-        }else {
-            console.log(msg.response+"error")
-            return callback({success:false})
-        }
-    })
-
-}
-var upload = multer({storage:storage})
 router.get('/variations', function (req, res, next) {
     var productId = req.query.productId;
 
@@ -94,18 +47,7 @@ router.get('/latest',function (req, res, next) {
     })
 })
 
-router.get('/all',function (req, res, next) {
-    var cookie = req.signedCookies
-    if(cookie===undefined){
-        res.redirect("login")
-    }else {
 
-        productsDb.getProducts(cookie.businessAuth.businessId, function (msg) {
-
-            res.send(msg)
-        })
-    }
-});
 
 router.get("/discover", function (req, res, next){
     var last_timestamp = req.query.last_timestamp
@@ -114,40 +56,6 @@ router.get("/discover", function (req, res, next){
     })
 })
 
-router.post('/additem', upload.single("image"),function (req, res, next) {
-
-    var cookie = req.signedCookies
-    var productId = req.body.productId;var descr = req.body.description;var categoryId = req.body.category;
-    var price = req.body.price;
-    var quantity = req.body.quantity;var barcode = req.body.barcode;
-    var productName = req.body.productName
-    var genericName = req.body.type /*generic name is the tag */
-    var currency = req.body.currency
-    var variations = (req.body.attrs!==undefined) ? JSON.parse(req.body.attrs):req.body.attrs
-
-
-    var deliverable = parseInt(req.body.deliverable);
-
-
-
-    if(cookie===undefined){
-        res.redirect("login")
-    }else {
-        var businessId = cookie.businessAuth.businessId
-        productId = productId+"_"+businessId
-        productsDb.addProduct(businessId,productId,descr,price,deliverable,quantity,barcode, categoryId,productName,genericName,currency,variations,function (msg) {
-            console.log(msg)
-            if(msg.success) {
-
-                store(req,  (good) => {
-                    (good.success)? res.send(msg):res.send(good)
-                })
-            }else {
-                res.send(msg)
-            }
-        })
-    }
-})
 router.get('/variants',function (req, res, next) {
     productsDb.variants(function (msg) {
         res.send(msg)

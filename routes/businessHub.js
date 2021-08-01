@@ -3,6 +3,56 @@ var router = express.Router();
 var fs = require("fs")
 var multer = require("multer")
 var config = require("../modules/CONFIG")
+var jwt  = require('jsonwebtoken');
+var itempicstorage = multer.diskStorage({
+    destination:"./images/products/",
+    filename:function (req, file, cb) {
+
+
+
+        var productId = req.body.productId;
+        var businessId = req.body.businessId
+
+        var identifier = Date.now()+productId
+        productId=productId+"_"+businessId;
+
+        _filename = identifier+".jpg";
+        productsDb.addProductImageIdentifier(identifier,productId,function (msg) {
+            if(msg.code===200){
+                cb(null, _filename)
+            }else {
+
+                cb(null,"")
+            }
+        })
+
+
+
+
+    }
+})
+function store(req, callback){
+    var productId = req.body.productId;
+    var businessId = req.body.businessId
+
+    var identifier = Date.now()+productId
+    productId=productId+"_"+businessId;
+
+    var _filename = identifier+".jpg";
+    productsDb.addProductImageIdentifier(identifier,productId,function (msg) {
+        if(msg.code===200){
+            //    store file
+            var data=Buffer.from(req.body.image.split('base64,')[1],'base64')
+
+            fs.writeFileSync(__dirname.replace("routes","images/products/"+_filename),data)
+            return callback({success: true})
+        }else {
+            console.log(msg.response+"error")
+            return callback({success:false})
+        }
+    })
+
+}
 var storage = multer.diskStorage({
     destination:"./images",
     filename:function (req, file, cb) {
@@ -23,6 +73,7 @@ var storage = multer.diskStorage({
     }
 })
 var upload = multer({storage:storage})
+var uploadItemImage = multer({storage:itempicstorage})
 var businessDb = require('../modules/dbOps/businessDbOps')
 var productsDb = require('../modules/dbOps/productDbObs')
 var genericDb = require('../modules/dbOps/genericQueries')
@@ -64,7 +115,8 @@ router.post("/join", function (req, res, next) {
     var description = req.body.description
     businessDb.authJoin(businessId,businessName,description,category,password,email,function (msg) {
         if(msg.code===100){
-            cookieMgr.set(res,"businessAuth",{businessId:businessId},600000000,function () {
+            let token = jwt.sign({id:businessId,category:"vendor"},req.app.get('secretKey'), {expiresIn:'7d'})
+            cookieMgr.set(res,"businessAuth",token,600000000,function () {
                 res.send(msg)
             })
         }else {
@@ -73,6 +125,49 @@ router.post("/join", function (req, res, next) {
     })
 
 })
+router.get('/products/all',function (req, res, next) {
+
+
+
+    productsDb.getProducts(req.body.businessId, function (msg) {
+
+        res.send(msg)
+    })
+
+});
+router.post('/additem', uploadItemImage.single("image"),function (req, res, next) {
+
+    var cookie = req.signedCookies
+    var productId = req.body.productId;var descr = req.body.description;var categoryId = req.body.category;
+    var price = req.body.price;
+    var quantity = req.body.quantity;var barcode = req.body.barcode;
+    var productName = req.body.productName
+    var genericName = req.body.type /*generic name is the tag */
+    var currency = req.body.currency
+    var variations = (req.body.attrs!==undefined) ? JSON.parse(req.body.attrs):req.body.attrs
+
+
+    var deliverable = parseInt(req.body.deliverable);
+
+
+
+
+    var businessId = req.body.businessId
+    productId = productId+"_"+businessId
+    productsDb.addProduct(businessId,productId,descr,price,deliverable,quantity,barcode, categoryId,productName,genericName,currency,variations,function (msg) {
+
+        if(msg.success) {
+
+            store(req,  (good) => {
+                (good.success)? res.send(msg):res.send(good)
+            })
+        }else {
+            res.send(msg)
+        }
+    })
+
+})
+
 router.post('/login', function (req, res, next) {
     var businessId = req.body.businessId
     var password = req.body.password
@@ -80,7 +175,8 @@ router.post('/login', function (req, res, next) {
 
     businessDb.authLogin(businessId,password,function (msg) {
         if(msg.success){
-            cookieMgr.set(res,"businessAuth",{businessId:businessId},600000000,function () {
+            let token = jwt.sign({id:businessId,category:"vendor"},req.app.get('secretKey'), {expiresIn:'7d'})
+            cookieMgr.set(res,"businessAuth",token,600000000,function () {
                 res.send(msg)
             })
         }else {
@@ -102,7 +198,7 @@ router.get('/dashboard', function (req, res, next) {
         try {
 
 
-            var businessId = token[config.gvs.businessAuthTokenName].businessId;
+            var businessId = req.body.businessId
 
             businessDb.getBusiness(businessId, function (msg) {
                 if (msg.code === 200) {

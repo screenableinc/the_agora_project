@@ -314,7 +314,7 @@ var cartItem = "<tr class='cartItem'>\n" +
     "<td class='product-col'>\n" +
     "    <img src='img/cart/1.jpg' alt=''>\n" +
     "    <div class='pc-title'>\n" +
-    "    <h4 id='title'>title</h4>\n" +
+    "    <h4 id='title'>title</h4><h5 class='small-text' id='variations'></h5>\n" +
     " <p id='price'>price</p>\n" +
     "</div>\n" +
     "</td>\n" +
@@ -328,16 +328,38 @@ var cartItem = "<tr class='cartItem'>\n" +
     "    </div>\n" +
     "    </td>\n" +
 
-    "<td class='total-col'><h4 class='totalItemCost'></h4></td>\n" +
+    "<td class='total-col'><h4 class='totalItemCost'></h4></td> <td><i id='delete' class=\"material-icons\">delete</i></td>\n" +
     "</tr>"
 export function cartItemTemplate(details) {
     var template = $(cartItem)
+    console.log(details.variations,"wise")
     template.attr("data-productId",details.productId)
     template.attr("data-businessId",details.vendorId)
     template.find("img").attr('src',"/products/images?productId="+details.productId)
     template.find("#title").text(details.productName)
     template.find("#price").text(details.price)
+    template.find("#delete").on('click', function () {
+    //    delete from cart
+        $.ajax({
+            type:"POST",
+            url:'/users/cart/delete',
+            data:{variationId:(details.variationId===null)? '00':details.variationId, productId:details.productId},
+            success: function (r) {
+                
+            }
+        })
+    })
     template.find(".totalItemCost").text(details.price)
+    if(details.variationId!=="00"){
+        var text = ""
+        for (var i = 0; i < details.variations.length; i++) {
+            text= (details.variations.length-1===i)? text+details.variations[i].value+" ":text+details.variations[i].value+", "
+
+        }
+
+
+        template.find("#variations").text(text)
+    }
 
     return template
 }
