@@ -83,19 +83,18 @@ $(document).ready(function () {
             console.log(msg)
         }
     })
-
-    $("#checkout").on('click',function (e) {
+    $("#order").on('click', function (e) {
+        e.preventDefault()
         $.ajax({
-            url:"/orders/order",
-            type:"POST",
-
-            data:{details: JSON.stringify(prepareItemsForOrder())},
-            success:function (msg) {
-                console.log(msg)
+            url:'/users/checkout',
+            type:'POST',
+            success:function () {
+                //    TODO::do something
             },
-            error:function (msg) {
-                console.log(msg)
+            error:function (err) {
+                //    Todo:::something
             }
         })
     })
+
 })

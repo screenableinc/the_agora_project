@@ -77,7 +77,7 @@ $(document).ready(function () {
     }
     function add(){
         //for npw////we wonnt use the quanity
-        let data = {productId:details.productId, variationId:(hasVariations)? $("#variationId").val():null }
+        let data = {productId:details.productId, variationId:(hasVariations)? $("#variationId").val():null, vendorId:details.vendorId }
         console.log($("#variationId").val(),"wise",hasVariations)
         if(hasVariations && $("#variationId").val()!=="") {
             $.ajax({
@@ -97,7 +97,7 @@ $(document).ready(function () {
 
                 },
                 error:function (e) {
-                    alert(e)
+                    console.log(e)
                 }
             })
         }
@@ -124,6 +124,7 @@ $(document).ready(function () {
 
 
     }
+
     fillDetails()
     attributes()
     review()

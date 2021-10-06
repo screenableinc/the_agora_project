@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var ordersDb = require('../modules/dbOps/ordersDbOp')
 var parameterize = require('../modules/dbOps/parameterize')
+var notify = require('../modules/notify')
 var config = require("../modules/CONFIG")
 router.get('/',function (req, res, next) {
 
@@ -26,10 +27,24 @@ router.get('/checkout', function (req, res, next) {
 })
 
 
-router.post('/accept',function () {
+router.post('/approve',function (req, res, next) {
 //    send message that order has been seen and accepted
+//    todo:remember to alter quantities
+    let vendorName = req.body.vendorName;
+    ordersDb.approveOrder(req.body.id, function (msg) {
+        //notify user
+        notify.orderAccept(vendorName,26, "sccj","Macbook Pro 2015","Cash","red",22,1)
+        res.send(msg)
+    })
+
+    
 
 
+})
+router.post('/reject', function (req, res, next) {
+    ordersDb.rejectOrder(req.body.id, function (msg) {
+        res.send(msg)
+    })
 })
 router.get('/all',function (req, res, next) {
     try {

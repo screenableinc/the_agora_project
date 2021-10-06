@@ -223,11 +223,11 @@ var search_product="<div class=\"result row\">\n" +
     "        </div>\n" +
     "        <hr>"
 
-function addToCart(productId) {
+function addToCart(productId, variationId, vendorId) {
     $.ajax({
         url:"/users/cart/add",
         type:"POST",
-        data:{productId:productId},
+        data:{productId:productId, variationId:variationId, vendorId:vendorId},
         success:function (msg) {
             if(msg.success){
             //    add
@@ -286,8 +286,8 @@ export function genSearchProductTemplate(details) {
 export function genProductTemplate(details) {
     var template = $(product_template)
     template.find("#addToCart").on('click',function () {
-
-        addToCart(details.productId)
+        console.log(details)
+        addToCart(details.productId, details.variationId, details.vendorId)
     })
     template.find("img").attr('src',"/products/images?productId="+details.productId)
     template.find("#name").text(details.productName)

@@ -2,6 +2,7 @@ var connection = require('../dbOps/db.js')
 var genericQueries = require('../dbOps/genericQueries.js');
 var config = require('../CONFIG')
 
+
 //for customer
 // TODO optimize queries to use one function
 
@@ -32,17 +33,32 @@ function getOrders(vendorId, callback) {
     })
 }
 
-function makeOrder(details,username,callback) {
+function approveOrder(orderId, callback) {
+    let sql = "UPDATE orders SET status = 1 WHERE orderId = "+orderId
+    connection.query(sql, function (err, res) {
+        if (err) throw err;
+        //notify
 
-    var sql="INSERT INTO orders (productId, variationId,vendorId, timestamp, quantity,status, userId) VALUES ?"
-    connection.query(sql, [details], function (err, result) {
+        return callback({success:true, code:200})
+    })
+}
+function rejectOrder(orderId, callback) {
+    let sql = "UPDATE orders SET status = 2 WHERE orderId = "+orderId
+    connection.query(sql, function (err, res) {
+        if (err) throw err;
+        return callback({success:true, code:200})
+    })
+}
+
+function makeOrder(username,callback) {
+    let sql = "call move_to_orders(?,?)"
+
+    let params = [username, new Date().getTime()]
+    connection.query(sql, params, function (err, result) {
         if(err){
             throw err;
         }else {
-            //function delete from table...place order despite failure to delete and remind admin to delete
-            genericQueries.del("cart",{productId:details[0][0],username:username},function (msg) {
-                console.log(msg)
-            })
+
 
             return callback({success:true,code:200})
         }
@@ -51,5 +67,7 @@ function makeOrder(details,username,callback) {
 
 module.exports={
     makeOrder:makeOrder,
-    getOrders:getOrders
+    getOrders:getOrders,
+    approveOrder:approveOrder,
+    rejectOrder:rejectOrder
 }

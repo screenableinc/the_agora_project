@@ -1,8 +1,23 @@
 import * as manipulate from './clientmodules/mani.js'
 import * as templating from './templateBuilders/template.js'
 import * as tableToJSON from './clientmodules/product_attributes.js'
+// import {orderDetails} from "../../modules/emailTemplates";
 $(document).ready(function () {
     //function overlay height
+
+    function dateformat(timestamp) {
+        let date = new Date(timestamp)
+        let month = date.getMonth()+1
+        let day = date.getDate()
+        let year = date.getFullYear();
+        let hours = (date.getHours()===0)? 24:date.getHours()
+        let minutes = (date.getMinutes() < 10) ? "0"+date.getMinutes():date.getMinutes()
+        let seconds = (date.getSeconds() < 10) ? "0"+date.getSeconds():date.getSeconds()
+        let time = hours +":"+ minutes+":"+seconds
+        let fulldate = day+"-"+month+"-"+year + " " + time
+        return fulldate
+    }
+
     $("#overlay").css('height',$("#banner").height())
     // console.log($("#banner").height())
 
@@ -53,15 +68,6 @@ $(document).ready(function () {
 
 
     function addToItemsTable(object) {
-       //  console.log(g_var_categories)
-       //  var row = $("<tr></tr>")
-       //  var tds = [$("<td>"+ object.productId +"</td>"),
-       //  $("<td>"+ object.productName +"</td>"),
-       //  $("<td>"+ g_var_categories[object.categoryId] +"</td>"),
-       // $("<td>"+ object.barcode +"</td>"),
-       //  $("<td>"+ object.price +"</td>"),
-       //  $("<td>"+ object.description +"</td>"),
-       //  $("<td>"+ object.deliverable +"</td>")]
 
         var row = templating.genItemsTemplate([object.productId, object.productName,object.categoryId,object.barcode,object.price, object.description,object.deliverable])
 
@@ -74,19 +80,125 @@ $(document).ready(function () {
     }
     function addToOrdersTable(object) {
 
+
         var row = $("<tr></tr>")
+        let actioncol=$("<td></td>")
+        let loader = $("<div style='display: none' class=\"loadingio-spinner-dual-ring-2hfni47dp4f\"><div class=\"ldio-0wpc099mxpr\">\n" +
+            "<div></div><div><div></div></div>\n" +
+            "</div></div>")
+        let status_icon;
+        switch (object.status){
+            case 1:
+                status_icon = $("<i style='color: #0fd03f' class=\"material-icons\">task</i>")
+                break;
+            case 2:
+                status_icon = $("<i style='color: #d00f0f' class=\"material-icons\">free_cancellation</i>");
+                break;
+            default:
+                status_icon = $("<i style='color: #ffbf00' class=\"material-icons\">warning_amber</i>")
+
+        }
+
+        actioncol.append(status_icon)
+        console.log(object.timestamp)
+
         var tds = [$("<td>"+ object.productName +"</td>"),
             $("<td>"+ object.username +"</td>"),
             $("<td>"+ object.quantity  +"</td>"),
             $("<td>"+ object.price +"</td>"),
             $("<td>"+ object.phoneNumber +"</td>"),
-            $("<td>"+new Date(object.timestamp)  +"</td>")]
+            //come back to this
+            $("<td>"+dateformat(object.timestamp)  +"</td>"), actioncol]
         $(tds).each(function () {
 
             row.append(this)
         })
 
+        var dropDown = "<div class=\"dropdown\">\n" +
+            "  <a style='background-color: #0ca2e2' class=\"btn btn-sm dropdown-toggle\" href=\"#\" role=\"button\" id=\"dropdownMenuLink\" data-toggle=\"dropdown\" aria-haspopup=\"true\" aria-expanded=\"false\">\n" +
+            "    Action\n" +
+            "  </a>\n" +
+            "\n" +
+            "  <div class=\"dropdown-menu\" aria-labelledby=\"dropdownMenuLink\">\n" +
 
+            "  </div>\n" +
+            "</div>"
+        dropDown = $(dropDown)
+        //decide on which options to show depending on status
+        //status is such that 0 is pending, 1 is accepted, and 2 is approved
+        let approval = $("<a class='dropdown-item' href=''>Approve</a>")
+        let rejection = $("<a class='dropdown-item' href=''>Reject</a>")
+        let message = $("<a class='dropdown-item' href=''>Contact Buyer</a>")
+        function toggleLoader() {
+
+
+            if(dropDown.css("display")==="none"){
+
+                loader.css("display","none")
+                dropDown.css("display","block")
+            }else {
+
+                loader.css("display","block")
+                dropDown.css("display","none")
+            }
+        }
+        function approve() {
+            approval.on('click', function (e) {
+                e.preventDefault()
+            //    load loader
+                toggleLoader()
+                $.ajax({
+                    type:"POST",
+                    url:"/orders/approve",
+                    data:{id:object.orderId},
+                    success:function () {
+                        status_icon.css('color','#0fd03f').text("task")
+                        toggleLoader()
+                    },
+                    error: function (err) {
+                        toggleLoader()
+                    }
+                })
+
+
+            })
+
+        }
+        function reject(){
+            rejection.on('click', function (e) {
+                e.preventDefault()
+                //    load loader
+                toggleLoader()
+                $.ajax({
+                    type:"POST",
+                    url:"/orders/reject",
+                    data:{id:object.orderId},
+                    success:function () {
+                        status_icon.css('color','#d00f0f').text("free_cancellation")
+                        toggleLoader()
+                    },
+                    error: function (err) {
+                        toggleLoader()
+                    }
+                })
+
+
+            })
+        }
+        switch(object.status){
+            case 0:
+        //        load all actions
+                approve();reject()
+                break;
+            case 1:
+        //        load only messaging
+
+
+        }
+        dropDown.find('.dropdown-menu').append(approval).append(rejection).append(message)
+        // dropDown.append(approval); dropDown.append(rejection); dropDown.append(message)
+
+        row.append($("<td class='theactions'></td>").append(dropDown).append(loader))
         $("#ordersTableBody").append(row)
 
 
@@ -116,6 +228,7 @@ $(document).ready(function () {
         })
     }
     function getAllOrders() {
+
         $.ajax({
             url:"/orders/all",
             type:"GET",

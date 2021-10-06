@@ -86,9 +86,9 @@ function authJoin(username, emailAddress, phoneNumber,password,fullName,countryC
     )
 }
 
-function addToCart(username,productId,variationId,callback) {
-    var sql = "INSERT INTO cart (productId,username,variationId) VALUES (?)"
-    var values =[[productId,username,variationId]]
+function addToCart(username,productId,variationId,vendorId,callback) {
+    var sql = "INSERT INTO cart (productId,username,variationId, vendorId) VALUES (?)"
+    var values =[[productId,username,variationId, vendorId]]
 
 
     connection.query(sql,values,function (err,result) {
@@ -211,6 +211,7 @@ function getCart(username, callback) {
     // })
 
 }
+
 function store_picture() {
 //cdn
 }

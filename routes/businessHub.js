@@ -63,10 +63,10 @@ var storage = multer.diskStorage({
         }else if (path.trim()=="/banner"){
             prefix="/banners/"
         }
-        var businessId = req.signedCookies.businessAuth.businessId
+        var businessId = req.body.businessId
 
         _filename =prefix + businessId+".jpg";
-        console.log(_filename,"wise", path)
+
         cb(null, _filename)
 
 
@@ -264,7 +264,13 @@ router.post('/logo', upload.single('logo'),function (req, res, next) {
         res.sendFile(path)
     }
 })
+
+let handle = function(req, res, next){
+    req.body.ok="done"
+    return next()
+}
 router.post('/banner', upload.single('banner'),function (req, res, next) {
+    console.log(req.body.businessId,"ssssssssss")
     var businessId = req.body.businessId+".jpg"
     const path = __dirname.replace("routes","images/"+businessId);
 
@@ -278,7 +284,7 @@ router.post('/banner', upload.single('banner'),function (req, res, next) {
 })
 router.get('/banner',function (req, res, next) {
     console.log("here")
-    var businessId = req.query.businessId+".jpg"
+    var businessId = req.body.businessId+".jpg"
     const path = __dirname.replace("routes","images/banners/"+businessId);
 
     if (fs.existsSync(path)){

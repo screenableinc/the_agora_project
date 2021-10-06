@@ -1,7 +1,9 @@
 var express = require('express');
 var router = express.Router();
 var userDb = require('../modules/dbOps/usersDbOp.js')
+var ordersDb = require('../modules/dbOps/ordersDbOp.js')
 var cookieMgr = require('../modules/cookieManager.js')
+var notify = require('../modules/notify')
 var config = require("../modules/CONFIG")
 var jwt  = require('jsonwebtoken');
 /* GET users listing. */
@@ -20,7 +22,7 @@ router.post('/login', function(req, res, next) {
         console.log(msg,password)
       if (msg.code===100){
         // sign cookie
-          const token = jwt.sign({id:identifier, category: "user"},    )
+          const token = jwt.sign({id:identifier, category: "user"}, req.app.get('secretKey'),{expiresIn: '7d'}   )
 
           cookieMgr.set(res,"x-access-token",token,60048000000,function () {
               res.send(msg)
@@ -106,16 +108,24 @@ router.get('/following/vendors',function(req, res, next){
 })
 
 router.post('/cart/add',function (req, res, n) {
-  var cookies = req.signedCookies
-  var productId = req.body.productId
+    var productId = req.body.productId
     var variantId =req.body.variationId
+    var vendorId = req.body.vendorId
+    console.log(vendorId,"look")
 
-
-      userDb.addToCart(req.body.userId,productId,variantId,function (msg) {
+      userDb.addToCart(req.body.userId,productId,variantId,vendorId,function (msg) {
 
         res.send(msg)
       })
 
+})
+router.post('/checkout',function(req, res, next) {
+
+    let userId = req.body.userId;
+    ordersDb.makeOrder(userId, function (msg) {
+
+        res.send(msg)
+    })
 })
 router.post('/cart/delete', function (req, res, next) {
 
