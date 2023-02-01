@@ -10,69 +10,85 @@ var http = require('http');
 var https = require('https')
 var fs = require('fs')
 var db = require("../modules/dbOps/dbOpsMain")
+var config=require("../modules/CONFIG")
+const os = require("os");
 /**
  * Get port from environment and store in Express.
  */
+const deployed = config.deployed
+
 
 var port = normalizePort(process.env.PORT || '4000');
 app.set('port', port);
-
 /**
  * Create HTTP server.
  */
 
-var server = http.createServer(app);
+
 
 
 //https
 
-const cert = fs.readFileSync('./bin/security/vendnbuy_com.crt');
-const ca = fs.readFileSync('./bin/security/vendnbuy_com.ca-bundle');
-const key = fs.readFileSync('./bin/security/pvt.key');
+const cert = fs.readFileSync('./ssl/crt.crt');
+const ca = fs.readFileSync('./ssl/ca-bundle.ca-bundle');
+const key = fs.readFileSync('./ssl/key.key');
 
 var options = {
   cert:cert,
   ca:ca,
   key:key
 }
-console.log()
+
 
 /**
  * Listen on provided port, on all network interfaces.
  */
 //Todo remove this in production
-var os = require('os');
-var ifaces = os.networkInterfaces();
+
 try {
-  Object.keys(ifaces).forEach(function (ifname) {
-    var alias = 0;
+  if(!deployed) {
 
-    ifaces[ifname].forEach(function (iface) {
-      if ('IPv4' !== iface.family || iface.internal !== false) {
-        // skip over internal (i.e. 127.0.0.1) and non-ipv4 addresses
-        return;
-      }
+    var ifaces = os.networkInterfaces();
+    var server = http.createServer(app);
+    Object.keys(ifaces).forEach(function (ifname) {
+      var alias = 0;
 
-      if (alias >= 1) {
-        // this single interface has multiple ipv4 addresses
-        console.log(ifname + ':' + alias, iface.address);
-      } else {
-        // this interface has only one ipv4 adress
-        console.log(iface.address)
-        server.listen(port, iface.address);
-      }
-      ++alias;
+      ifaces[ifname].forEach(function (iface) {
+        if ('IPv4' !== iface.family || iface.internal !== false) {
+          // skip over internal (i.e. 127.0.0.1) and non-ipv4 addresses
+          return;
+        }
+
+        if (alias >= 1) {
+          // this single interface has multiple ipv4 addresses
+          console.log(ifname + ':' + alias, iface.address);
+        } else {
+          // this interface has only one ipv4 adress
+          console.log(iface.address)
+          server.listen(port, iface.address);
+        }
+        ++alias;
+      });
     });
-  });
+  }
 }catch (e){
-
+ throw e;
 }
 // https.createServer(options,app).listen(4435)
-https.createServer(options,app).listen(443)
+// https.createServer(options,app).listen(443)
+if(deployed) {
+  //  create an https server
+  var server = http.createServer(app);
+  server.listen(port)
+  // httpsServer.on('error', onError);
+  // httpsServer.on('listening', onListening);
 
-    server.listen(port)
-server.on('error', onError);
-server.on('listening', onListening);
+}else {
+  server.listen(port)
+  server.on('error', onError);
+  server.on('listening', onListening);
+}
+
 
 
 /**
@@ -133,3 +149,4 @@ function onListening() {
     : 'port ' + addr.port;
   debug('Listening on ' + bind);
 }
+

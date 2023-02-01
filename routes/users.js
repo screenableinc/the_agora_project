@@ -5,6 +5,7 @@ var ordersDb = require('../modules/dbOps/ordersDbOp.js')
 var cookieMgr = require('../modules/cookieManager.js')
 var notify = require('../modules/notify')
 var config = require("../modules/CONFIG")
+
 var jwt  = require('jsonwebtoken');
 /* GET users listing. */
 router.get('/login', function(req, res, next) {
@@ -19,12 +20,14 @@ router.post('/login', function(req, res, next) {
 
   var password = req.body.password;
   userDb.authLogin(identifier, password,function (msg) {
-        console.log(msg,password)
+        console.log(req.headers)
       if (msg.code===100){
         // sign cookie
           const token = jwt.sign({id:identifier, category: "user"}, req.app.get('secretKey'),{expiresIn: '7d'}   )
 
           cookieMgr.set(res,"x-access-token",token,60048000000,function () {
+
+              msg["response"]["accessToken"]=token
               res.send(msg)
           })
 
@@ -37,6 +40,17 @@ router.post('/login', function(req, res, next) {
 
 
 });
+
+
+//create if coming from mobile version of /join
+function from_mobile(){
+//gen otp
+//    make otp password and pn username
+    
+}
+router.post('/join/mobile/pn', function (req, res, next) {
+
+})
 router.post('/join', function(req, res, next) {
   var username = req.body.username;
   var fullName = req.body.fullName;
@@ -46,9 +60,12 @@ router.post('/join', function(req, res, next) {
   userDb.authJoin(username,emailAddress,phoneNumber,password,fullName,cc,function (msg) {
     if(msg.code===100){
       const token = jwt.sign({id:username, category: "user"},req.app.get('secretKey'), {expiresIn:'7d'})
+      //    there is a mismatch with the auth expiration data
 
       cookieMgr.set(res,"x-access-token",token,60048000000,function () {
-        res.send(msg)
+          //for mobile, send access token
+          msg["accessToken"]=token
+          res.send(msg)
       })
 
     }else {
@@ -74,8 +91,9 @@ router.get('/cart/view', function(req, res, next) {
 
 });
 router.get('/cart/items',function (req, res, next) {
-
+    req.body.userId="iamwise_offici55al"
       userDb.getCart(req.body.userId,function (msg) {
+        //  TODO::Fix payment options to optimize data selection
 
         res.send(msg)
       })
@@ -112,6 +130,7 @@ router.post('/cart/add',function (req, res, n) {
     var variantId =req.body.variationId
     var vendorId = req.body.vendorId
     console.log(vendorId,"look")
+    req.body.userId="iamwise_offici55al"
 
       userDb.addToCart(req.body.userId,productId,variantId,vendorId,function (msg) {
 

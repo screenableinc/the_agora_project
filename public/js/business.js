@@ -150,7 +150,7 @@ $(document).ready(function () {
                 $.ajax({
                     type:"POST",
                     url:"/orders/approve",
-                    data:{id:object.orderId},
+                    data:{orderId:object.orderId},
                     success:function () {
                         status_icon.css('color','#0fd03f').text("task")
                         toggleLoader()
@@ -356,6 +356,9 @@ $(document).ready(function () {
     $("#addItems").on("click", function (e) {
         $("#addItemModal").modal()
     })
+    $("#runAd").on('click',function (e) {
+        $("#adsModal").modal()
+    })
 
     function prepareForTable(data) {
         var processed={}
@@ -477,7 +480,7 @@ $(document).ready(function () {
             prepareForTable(dataForTable)
 
             $.ajax({
-                url: "/products/additem",
+                url: "/business/additem",
                 method: "POST",
 
                 processData: false,
@@ -495,9 +498,9 @@ $(document).ready(function () {
                 }
 
             }).done(function (){
-                $(".loader").css('display','none');
-                $("#addItem").css("display","block");
-                $("#attrs_input").val("")
+                // $(".loader").css('display','none');
+                // $("#addItem").css("display","block");
+                // $("#attrs_input").val("")
             })
         }else {
             alert("Please upload an image")

@@ -4,6 +4,8 @@ var config = require("../modules/CONFIG")
 var querystring = require('querystring')
 var genericDb = require('../modules/dbOps/genericQueries')
 var parameterize = require('../modules/dbOps/parameterize')
+const verify = require("../modules/verify");
+
 
 
 
@@ -11,6 +13,7 @@ var parameterize = require('../modules/dbOps/parameterize')
 router.get('/' ,function(req, res, next) {
   // res.render('birthday')
   var cookies = req.signedCookies;
+
 
 
   // res.render('index',{})
@@ -34,6 +37,27 @@ router.get('/' ,function(req, res, next) {
   }
 
 });
+router.get('/tos', function (req, res, next) {
+    var party = req.query.party;
+    if(party==='vendor'){
+        res.render('sellertos')
+    }else if(party==='buyer'){
+        res.render('buyertos')
+    }
+
+})
+router.get('/userexists', function (req, res, next) {
+    var username = req.query.username.trim();
+
+    (username==="")? res.send({success:false, code:500}):proceed()
+    function proceed() {
+        genericDb.entryExists("agorans","username",username, function (msg) {
+            //returns true or false
+            res.send({exists:msg, code:200, success:true})
+        })
+    }
+
+})
 router.get('/currencies/all', function (req, res, next) {
    genericDb.currencySelect(function (msg) {
        res.send(msg)
@@ -97,7 +121,12 @@ router.get('/search',function (req, res, next) {
 
 })
 
+router.get('/verify', function (req, res, next) {
 
+    verify.sendCode(req.query.number,function (msg) {
+        res.send(msg)
+    })
+})
 router.post('/ads',function (req, res, next) {
     var vendorId = req.body.vendorId
     var adId = req.body.adId

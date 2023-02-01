@@ -12,7 +12,7 @@ var categoriesRouter = require('./routes/categories')
 var ordersRouter = require('./routes/orders')
 var businessHubRouter = require('./routes/businessHub')
 var checkoutRouter = require('./routes/checkout')
-
+var useragent = require('express-useragent');
 var jwt = require('jsonwebtoken')
 var app = express();
 
@@ -22,6 +22,7 @@ app.set('view engine', 'hbs');
 app.use(favicon(path.join(__dirname,'public','images','favicon.ico')));
 app.set('secretKey','ChenniMyLove')
 app.use(logger('dev'));
+app.use(useragent.express());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser("pkiohkgjgy1123sgfgh"));
@@ -32,10 +33,10 @@ app.use(bodyparser.urlencoded({extended:true}))
 
 
 app.use('/',indexRouter);
-app.use('/users', validateUser,usersRouter);
+app.use('/users',usersRouter);
 app.use('/products',productsRouter);
-app.use('/orders',validateBusiness,ordersRouter);
-app.use('/business', validateBusiness,businessHubRouter);
+app.use('/orders',ordersRouter);
+app.use('/business',businessHubRouter);
 app.use('/categories', categoriesRouter);
 app.use('/checkout',validateUser,checkoutRouter)
 // catch 404 and forward to error handler
@@ -49,6 +50,8 @@ app.use(function(req, res, next) {
 //validation
 
 function validateBusiness(req, res, next){
+
+
   var token = (req.token == null) ?  req.signedCookies['businessAuth'] : req.token
   jwt.verify(token, req.app.get('secretKey'), function(err, decoded) {
     if (err) {
@@ -56,7 +59,12 @@ function validateBusiness(req, res, next){
       if(req.url==='/login' || req.url==='/join'){
         next()
       }else {
-        res.redirect("/business/login")
+          if(req.useragent.isMobile){
+                  res.send({success:false, code:4422})
+          }else {
+              res.redirect("/business/login")
+          }
+
       }
     }else{
       // add user id to request
@@ -67,33 +75,50 @@ function validateBusiness(req, res, next){
         req.body.businessId = decoded.id;
         req.body.type = decoded.category;
         next();
+
       }
     }
   });
 }
 
 function validateUser(req, res, next) {
-  var token = (req.token == null) ?  req.signedCookies['x-access-token'] : req.token
+  //what to do if coming from mobile
+
+  // var token = (req.token == null) ?  req.signedCookies['x-access-token'] : req.token
+  var token = req.headers.accesstoken;
+  function authURLIncoming(url){
+      return url === "/join" || url === "/login";
+  }
   jwt.verify(token, req.app.get('secretKey'), function(err, decoded) {
-    if (err) {
 
-      if(req.url==='/login' || req.url==='/join'){
-        next()
-      }else {
-        res.redirect("/users/login")
-      }
-    }else{
-      // add user id to request
 
-      if(req.url==='/login' || req.url==='/join'){
-        next()
-      }else {
-        req.body.userId = decoded.id;
-        req.body.type = decoded.category;
-        next();
-      }
-    }
-  });
+              if (err) {
+
+                  if (req.url === '/login' || req.url === '/join') {
+                      next()
+                  } else {
+                      if (req.headers["user-agent"] === "mobile") {
+                          //  auth error
+                      res.send({success:false, code:500})
+                      } else {
+                          res.redirect("/users/login")
+                      }
+                  }
+              } else {
+                  // add user id to request
+
+                  if (authURLIncoming(req.url)) {
+                      next()
+                  } else {
+                      req.body.userId = decoded.id;
+                      req.body.type = decoded.category;
+                      next();
+                  }
+              }
+          }
+
+      );
+
 
 }
 // error handler

@@ -32,12 +32,13 @@ function select(column, table, key, value,callback) {
 //TODO deprecate
 function entryExists(table,columnKey,columnValue, callback){
     var sql  = "SELECT * FROM "+table+ " WHERE "+columnKey+" = " +JSON.stringify(columnValue)
+    //todo prevent sql injection
     connection.query(sql, function (err, result) {
         if (err) throw err;
         if (result.length===0){
             return callback(false)
         }else {
-            console.log(result)
+
             return callback(true)
         }
     })
@@ -130,6 +131,11 @@ function exists(table, where, callback){
         })
     })
 }
+function insertVCode(vcode,callback){
+    //whe,
+
+    var sql = "UPDATE agorans SET vcode="+vcode+"";
+}
 
 module.exports={
     select:select,
@@ -137,6 +143,7 @@ module.exports={
     search:search,
     currencySelect:currencies,
     del:del,
-    exists:exists
+    exists:exists,
+    entryExists:entryExists
     // selectAll:selectAll
 }

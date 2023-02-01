@@ -7,6 +7,7 @@ var parameterizedQueries = require('../dbOps/parameterize.js');
 function userExists(username, phoneNumber, emailAddress,callback){
     var sql  = "SELECT * from agorans WHERE username = '"+ username +"' OR phoneNumber = '"+ phoneNumber +"' " +
         "OR emailAddress ='"+ emailAddress +"'"
+
     connection.query(sql, function (err, result) {
         if (err) throw err;
         if (result.length===0){
@@ -112,7 +113,7 @@ function cartCount(username, callback){
         if (err){
             return callback ({success:false,code:500})
         }else {
-            console.log(result, sql)
+
             return callback({success:true, response:result[0].total, code:200})
         }
     })

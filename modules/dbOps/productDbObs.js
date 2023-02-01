@@ -47,6 +47,7 @@ async function insertInVariationsTable(variations, productId, quantity,price){
 
     return new Promise(function (resolve, reject) {
         var sql = "INSERT INTO variations (variationId, productId, variantName, value) VALUES ?"
+
         let insert_q = "INSERT INTO variationtable (variationId) VALUES ?"
         var main_arr = []
         let variationIds = []
@@ -61,9 +62,7 @@ async function insertInVariationsTable(variations, productId, quantity,price){
             if (!variationIds.includes(variationId)){
                 variationIds.push([variationId])
             }
-            console.log(i)
 
-            console.log(i,variations,"wise")
             var keys = Object.keys(variations[i])
 
             var different_price=0.0; var different_qty=0;
@@ -101,6 +100,7 @@ async function insertInVariationsTable(variations, productId, quantity,price){
         }
 
         connection.query(insert_q,[variationIds], function (err, res) {
+            console.log(variationIds, "debug")
             if(err){
                 reject(err)
             }else {
@@ -142,20 +142,23 @@ function addProduct(businessId, productId,description, price, deliverable,quanti
 
         var sql = "INSERT INTO products (vendorId, productId, description, price, deliverable," +
             "quantity, barcode, categoryId, productName, timestamp, tag,currency) VALUES (?)"
-        var values = [[businessId,productId, description,price,deliverable, quantity,barcode, categoryId,productName, new Date().getTime(), tag,currency]]
-        insertInProductTable(sql,values).then(result=>{
+        var values = [[businessId,productId, description,price,deliverable, quantity,barcode, categoryId,productName, new Date().getTime(), tag,"1"]]
 
 
-                    insertInVariationsTable(variations.variations,productId,quantity,price).then(result=>{
-                        return callback(result)
-                    }).catch(msg=>{
-                        console.log(msg)
-                        return callback(msg)
-                    })
+        if(variations!==undefined){
+            insertInProductTable(sql, values).then(result => {
 
 
+                insertInVariationsTable(variations.variations, productId, quantity, price).then(result => {
+                    return callback(result)
+                }).catch(msg => {
+                    console.log(msg)
+                    return callback(msg)
+                })
 
-        })
+
+            })
+        }
 
     }).catch((msg)=>{
         console.log(msg)
@@ -178,9 +181,9 @@ function addToCart(username,productId,callback) {
 function orderItems(ownerId,items,callback){
 
 }
-function addProductImageIdentifier(identifier,productId,callback) {
-    var sql = "INSERT INTO product_images (productId, identifier) VALUES (?)"
-    connection.query(sql, [[productId,identifier]],function (err,result) {
+function addProductImageIdentifier(identifier,productId, count,callback) {
+    var sql = "INSERT INTO product_images (productId, identifier, count) VALUES (?)"
+    connection.query(sql, [[productId,identifier,count]],function (err,result) {
         if(err){
             return callback({success:false,response:err})
         }else {

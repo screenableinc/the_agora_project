@@ -6,10 +6,10 @@ class sql{
 
     }
     async do_all(sql){
-        console.log("yes")
+
         connection.query(sql,function (err, result){
             if(err){
-                console.log(err)
+
                 throw err;
             }
         })
@@ -47,7 +47,7 @@ class sql{
         return this.prepare()
     }
 }
-new sql().start
+// new sql().start
 
 // module.exports = {
 //     run:begin

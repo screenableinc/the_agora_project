@@ -1,6 +1,7 @@
 var connection = require('../dbOps/db.js')
 var genericQueries = require('../dbOps/genericQueries.js');
 var config = require('../CONFIG')
+var notify = require('../notify')
 
 
 //for customer
@@ -24,7 +25,7 @@ function getOrders(vendorId, callback) {
         " = orders.userId WHERE orders.vendorId = "+JSON.stringify(vendorId)
     connection.query(sql,function (err, result) {
         if(err){
-            console.log(err)
+
             return callback({code:500,success:false})
 
         }else {
@@ -33,11 +34,20 @@ function getOrders(vendorId, callback) {
     })
 }
 
-function approveOrder(orderId, callback) {
+function approveOrder(orderId,vendorName,productName, variation,username, callback) {
     let sql = "UPDATE orders SET status = 1 WHERE orderId = "+orderId
-    connection.query(sql, function (err, res) {
+    connection.query(sql, function (err, result) {
         if (err) throw err;
-        //notify
+        console.log(result)
+        // notify user
+        connection.query(`SELECT username, phoneNumber, fullName, emailAddress FROM agorans WHERE username = '${username.toString()}'`, function (err, res) {
+            if (err) throw err;
+            //pass phone number of agoran or email, order total, productname,variation, vendor name
+            notify.orderAccept(email='',phone=res[0]['phoneNumber'], vendorName, 1000, res[0]['fullName'],productName,variation,1, 2)
+        })
+
+
+
 
         return callback({success:true, code:200})
     })
@@ -50,14 +60,16 @@ function rejectOrder(orderId, callback) {
     })
 }
 
-function makeOrder(username,callback) {
-    let sql = "call move_to_orders(?,?)"
+function makeOrder(username, paymentOption,variationId,productId,callback) {
+    let sql = "call move_to_orders(?,?,?,?,?)"
+    //username timestamp paymentOption
 
-    let params = [username, new Date().getTime()]
+    let params = [username, new Date().getTime(), paymentOption, variationId, productId]
     connection.query(sql, params, function (err, result) {
         if(err){
             throw err;
         }else {
+            console.log(username,result)
 
 
             return callback({success:true,code:200})

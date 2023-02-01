@@ -1,19 +1,53 @@
 let nodemailer = require('nodemailer')
 let hbs = require('handlebars')
 let emailT = require('../modules/emailTemplates')
+let https = require('https');
 const senderAddress = "vendnbuy@vendnbuy.com"
 const host='server51.web-hosting.com'
 const port=465
 const password = 'pvDRuHT{Z7%2'
-
-function orderAccept(vendorName, price,username,productName, method,variation,quantity, type) {
+let bulkSMSkey = "2eeca676d357a7313a58fbb075d41431"
+let bulkSMSlink = "https://bulksms.zamtel.co.zm/api/v2.1/action/send/api_key/:api_key/contacts/:contacts/"
+//pass phone number of agoran or email, order total, productname,variation, vendor name
+function orderAccept(email, phone,vendorName, total, fullname,productName,variation,quantity, type) {
 
     //    type should be 1 for email, 2 for text, 0 for both
+    //get phone number of user and vendor
+
     function text(){
-        let message = "Order approved for product name: " + productName+". variation: "+ variation +". qty: 1. Thank you " +
-            "for shopping at "+vendorName+" via vendnbuy"
+        console.log('called '+phone)
+        let message = `Order approved for ${productName}. variation: ${variation}. qty: 1. Order total is ${total} Thank you
+            for shopping at ${vendorName} via VENDnBUY`;
+        message=encodeURIComponent(message)
+        let link = `/api/v2.1/action/send/api_key/${bulkSMSkey}/contacts/${phone}/senderId/VENDnBUY/message/${message}`
+
+        const options = {
+            hostname: 'bulksms.zamtel.co.zm',
+            port: 443,
+            path: link,
+            method: 'GET',
+            headers: {
+                'Accept': 'plain/html',
+                'Accept-Encoding': '*',
+            }
+        }
+
+        const req = https.request(options, res => {
+            console.log(`statusCode: ${res.statusCode}`);
+            console.log('headers:', res.headers);
+
+            res.on('data', d => {
+                process.stdout.write(d)
+            })
+        })
 
 
+        req.on('error', error => {
+            console.error(`Error on Get Request --> ${error}`)
+            // alert developer
+        })
+
+        req.end()
     }
     function email(){
         let json = {

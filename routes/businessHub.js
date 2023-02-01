@@ -1,36 +1,84 @@
+// noinspection JSVoidFunctionReturnValueUsed
+
 var express = require('express');
 var router = express.Router();
 var fs = require("fs")
 var multer = require("multer")
 var config = require("../modules/CONFIG")
 var jwt  = require('jsonwebtoken');
-var itempicstorage = multer.diskStorage({
+
+//authentication
+function validateBusiness(req, res, next){
+
+
+    var token = (req.headers.token == null) ?  req.signedCookies['businessAuth'] : req.headers.token
+    jwt.verify(token, req.app.get('secretKey'), function(err, decoded) {
+        if (err) {
+
+            if(req.url==='/login' || req.url==='/join'){
+                next()
+            }else {
+                res.redirect("/business/login")
+            }
+        }else{
+            // add user id to request
+
+            if(req.url==='/login' || req.url==='/join'){
+                next()
+            }else {
+
+                req.body.businessId = decoded.id;
+                req.body.type = decoded.category;
+                next();
+
+            }
+        }
+    });
+}
+//
+
+let itempicstorage = multer.diskStorage({
     destination:"./images/products/",
     filename:function (req, file, cb) {
+        console.log(file)
 
 
 
         var productId = req.body.productId;
-        var businessId = req.body.businessId
+        var businessId = req.headers['businessId'];
+
 
         var identifier = Date.now()+productId
         productId=productId+"_"+businessId;
 
-        _filename = identifier+".jpg";
-        productsDb.addProductImageIdentifier(identifier,productId,function (msg) {
-            if(msg.code===200){
-                cb(null, _filename)
-            }else {
-
-                cb(null,"")
-            }
-        })
+        _filename = file.originalname;
+        console.log(_filename)
+        cb(null,_filename)
+        // productsDb.addProductImageIdentifier(identifier,productId,function (msg) {
+        //     if(msg.code===200){
+        //         cb(null, _filename)
+        //     }else {
+        //
+        //         cb(null,"")
+        //     }
+        // })
 
 
 
 
     }
 })
+// any code that relies on this function is flawed and needs to be fixed
+function externalAuth(req,callback){
+    // console.log(req.headers.token)
+    var token = req.headers.token==null ? req.signedCookies["businessAuth"]:req.headers.token
+
+    jwt.verify(token, req.app.get('secretKey'), function(err, decoded) {
+
+        return callback(decoded.id)
+    });
+
+}
 function store(req, callback){
     var productId = req.body.productId;
     var businessId = req.body.businessId
@@ -79,6 +127,7 @@ var productsDb = require('../modules/dbOps/productDbObs')
 var genericDb = require('../modules/dbOps/genericQueries')
 var cookieMgr = require('../modules/cookieManager.js')
 var auth = require('../modules/auth/auth')
+const ordersDb = require("../modules/dbOps/ordersDbOp");
 
 router.get("/",function (req, res, next) {
     var businessId = req.query.vendorId
@@ -93,20 +142,33 @@ router.get("/",function (req, res, next) {
     })
 
 })
-router.get('/settings', function (req, res,next) {
+
+
+router.get('/orders/all',validateBusiness,function (req, res, next) {
+    try {
+        var businessId = req.body.businessId;
+        console.log(req);
+        ordersDb.getOrders(businessId,function (msg) {
+            res.send(msg)
+        })
+    }catch (e) {
+        throw e
+    }
+})
+router.get('/settings',validateBusiness, function (req, res,next) {
     res.render('settings')
 })
-router.get("/products",function (req, res,next) {
+router.get("/products",validateBusiness,function (req, res,next) {
     var businessId = req.query.businessId
     productsDb.getProducts(businessId,function (msg) {
         res.send(msg)
     })
 })
-router.get('/login', function (req, res, next) {
+router.get('/login', validateBusiness,function (req, res, next) {
 
     res.render('businessLogin',{})
 })
-router.post("/join", function (req, res, next) {
+router.post("/join", validateBusiness,function (req, res, next) {
     var businessId = req.body.businessId;
     var businessName = req.body.businessName;
     var category = req.body.category;
@@ -117,6 +179,8 @@ router.post("/join", function (req, res, next) {
         if(msg.code===100){
             let token = jwt.sign({id:businessId,category:"vendor"},req.app.get('secretKey'), {expiresIn:'7d'})
             cookieMgr.set(res,"businessAuth",token,600000000,function () {
+                //message should contain token for jwt auth
+                msg["token"]=token;
                 res.send(msg)
             })
         }else {
@@ -125,9 +189,9 @@ router.post("/join", function (req, res, next) {
     })
 
 })
-router.get('/products/all',function (req, res, next) {
+router.get('/products/all',validateBusiness,function (req, res, next) {
 
-
+    console.log("called")
 
     productsDb.getProducts(req.body.businessId, function (msg) {
 
@@ -135,17 +199,22 @@ router.get('/products/all',function (req, res, next) {
     })
 
 });
-router.post('/additem', uploadItemImage.single("image"),function (req, res, next) {
+router.get('/promos',validateBusiness, function (req, res, next) {
+    res.render('promos',{title:"Promos"})
+})
+router.post('/additem',uploadItemImage.any("file"),validateBusiness,function (req, res, next) {
+    //temporary
 
-    var cookie = req.signedCookies
     var productId = req.body.productId;var descr = req.body.description;var categoryId = req.body.category;
     var price = req.body.price;
+
     var quantity = req.body.quantity;var barcode = req.body.barcode;
     var productName = req.body.productName
     var genericName = req.body.type /*generic name is the tag */
     var currency = req.body.currency
     var variations = (req.body.attrs!==undefined) ? JSON.parse(req.body.attrs):req.body.attrs
-
+    console.log(req.files.length)
+    //add product image count to db to keep track of count
 
     var deliverable = parseInt(req.body.deliverable);
 
@@ -153,6 +222,7 @@ router.post('/additem', uploadItemImage.single("image"),function (req, res, next
 
 
     var businessId = req.body.businessId
+    //here
     productId = productId+"_"+businessId
     productsDb.addProduct(businessId,productId,descr,price,deliverable,quantity,barcode, categoryId,productName,genericName,currency,variations,function (msg) {
 
@@ -168,7 +238,7 @@ router.post('/additem', uploadItemImage.single("image"),function (req, res, next
 
 })
 
-router.post('/login', function (req, res, next) {
+router.post('/login', validateBusiness,function (req, res, next) {
     var businessId = req.body.businessId
     var password = req.body.password
 
@@ -177,10 +247,10 @@ router.post('/login', function (req, res, next) {
         if(msg.success){
             let token = jwt.sign({id:businessId,category:"vendor"},req.app.get('secretKey'), {expiresIn:'7d'})
             cookieMgr.set(res,"businessAuth",token,600000000,function () {
+                msg['token']=token;
                 res.send(msg)
             })
         }else {
-            console.log(msg)
             res.send(msg)
         }
     })
@@ -188,7 +258,7 @@ router.post('/login', function (req, res, next) {
 
 })
 
-router.get('/dashboard', function (req, res, next) {
+router.get('/dashboard',validateBusiness, function (req, res, next) {
     var token = req.signedCookies
 
     if (token===undefined){
@@ -219,7 +289,7 @@ router.get('/dashboard', function (req, res, next) {
 
 })
 
-router.get('/notifications', function (req, res, next){
+router.get('/notifications', validateBusiness,function (req, res, next){
     var token = new auth.auth_check(req,0).auth
 
     token.then(function (val){
@@ -236,7 +306,7 @@ router.get('/notifications', function (req, res, next){
 })
 router.get('/top',function (req, res, n) {
     businessDb.getTopBrands(function (msg) {
-        console.log(msg)
+
         res.send(msg)
     })
 })
@@ -269,7 +339,7 @@ let handle = function(req, res, next){
     req.body.ok="done"
     return next()
 }
-router.post('/banner', upload.single('banner'),function (req, res, next) {
+router.post('/banner', upload.single('banner'),validateBusiness,function (req, res, next) {
     console.log(req.body.businessId,"ssssssssss")
     var businessId = req.body.businessId+".jpg"
     const path = __dirname.replace("routes","images/"+businessId);

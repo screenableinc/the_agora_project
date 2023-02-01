@@ -3,7 +3,8 @@ var config = require('../CONFIG')
 var genericQueries = require('../dbOps/genericQueries')
 
 function getCategories(which,callback) {
-    var sql = "SELECT * FROM "+which
+    //dont remember why i included the parameter 'which'
+    var sql = "SELECT * FROM categories"
     connection.query(sql, function (err, result) {
         if(err){
             throw err

@@ -9,8 +9,10 @@ var multer = require("multer")
 
 router.get('/variations', function (req, res, next) {
     var productId = req.query.productId;
-
+    // console.log('Wise', productId);
     productsDb.getVariations(productId, function (msg) {
+        msg['code']=200;
+        console.log('Wise', msg);
         res.send(msg)
     })
 })
@@ -79,7 +81,7 @@ router.get("/images", function (req, res, next) {
             const path = __dirname.replace("routes","images/products/default.jpg");
             res.sendFile(path)
         }else {
-            console.log(productId,"kkkkk")
+
             var imagename;
             try {
                 imagename =  msg.response[0].identifier+".jpg"
