@@ -6,6 +6,8 @@ var fs = require("fs")
 var multer = require("multer")
 var config = require("../modules/CONFIG")
 var jwt  = require('jsonwebtoken');
+var notify = require('../modules/notify')
+
 
 //authentication
 function validateBusiness(req, res, next){
@@ -18,7 +20,12 @@ function validateBusiness(req, res, next){
             if(req.url==='/login' || req.url==='/join'){
                 next()
             }else {
-                res.redirect("/business/login")
+                if (req.headers["user-agent"]==="mobile"){
+                    res.status(211).send()
+                }else {
+
+                    res.redirect("/business/login")
+                }
             }
         }else{
             // add user id to request
@@ -40,7 +47,7 @@ function validateBusiness(req, res, next){
 let itempicstorage = multer.diskStorage({
     destination:"./images/products/",
     filename:function (req, file, cb) {
-        console.log(file)
+
 
 
 
@@ -52,7 +59,6 @@ let itempicstorage = multer.diskStorage({
         productId=productId+"_"+businessId;
 
         _filename = file.originalname;
-        console.log(_filename)
         cb(null,_filename)
         // productsDb.addProductImageIdentifier(identifier,productId,function (msg) {
         //     if(msg.code===200){
@@ -68,6 +74,7 @@ let itempicstorage = multer.diskStorage({
 
     }
 })
+
 // any code that relies on this function is flawed and needs to be fixed
 function externalAuth(req,callback){
     // console.log(req.headers.token)
@@ -147,9 +154,11 @@ router.get("/",function (req, res, next) {
 router.get('/orders/all',validateBusiness,function (req, res, next) {
     try {
         var businessId = req.body.businessId;
-        console.log(req);
+
         ordersDb.getOrders(businessId,function (msg) {
+
             res.send(msg)
+
         })
     }catch (e) {
         throw e
@@ -168,6 +177,17 @@ router.get('/login', validateBusiness,function (req, res, next) {
 
     res.render('businessLogin',{})
 })
+
+router.post("/phoneverify", function (req, res, next){
+    var code = req.body.code;
+    var phone = "+"+req.body.msisdn;
+
+    notify.sendCode(phone,code,function (msg){
+        res.send(msg)
+    })
+
+})
+
 router.post("/join", validateBusiness,function (req, res, next) {
     var businessId = req.body.businessId;
     var businessName = req.body.businessName;
@@ -175,7 +195,9 @@ router.post("/join", validateBusiness,function (req, res, next) {
     var password = req.body.password;
     var email = req.body.email;
     var description = req.body.description
+
     businessDb.authJoin(businessId,businessName,description,category,password,email,function (msg) {
+
         if(msg.code===100){
             let token = jwt.sign({id:businessId,category:"vendor"},req.app.get('secretKey'), {expiresIn:'7d'})
             cookieMgr.set(res,"businessAuth",token,600000000,function () {
@@ -202,9 +224,20 @@ router.get('/products/all',validateBusiness,function (req, res, next) {
 router.get('/promos',validateBusiness, function (req, res, next) {
     res.render('promos',{title:"Promos"})
 })
+
+// TODO:: validate business
+router.post('/editItem',function(req, res, next){
+    var field=req.body.field;
+    var value = req.body.value;
+    var productId = req.body.productId;
+    productsDb.editProduct(productId,field, value, function (msg){
+        res.send(msg)
+    })
+
+})
 router.post('/additem',uploadItemImage.any("file"),validateBusiness,function (req, res, next) {
     //temporary
-
+    console.log(req.files.length)
     var productId = req.body.productId;var descr = req.body.description;var categoryId = req.body.category;
     var price = req.body.price;
 
@@ -212,28 +245,32 @@ router.post('/additem',uploadItemImage.any("file"),validateBusiness,function (re
     var productName = req.body.productName
     var genericName = req.body.type /*generic name is the tag */
     var currency = req.body.currency
-    var variations = (req.body.attrs!==undefined) ? JSON.parse(req.body.attrs):req.body.attrs
-    console.log(req.files.length)
+    console.log(req.body)
+    var variations = (req.body.attrs!==undefined) ? JSON.parse(req.body.attrs.toString()):req.body.attrs
+
+
     //add product image count to db to keep track of count
 
     var deliverable = parseInt(req.body.deliverable);
 
-
+    var image_count = req.files.length;
 
 
     var businessId = req.body.businessId
+
     //here
     productId = productId+"_"+businessId
-    productsDb.addProduct(businessId,productId,descr,price,deliverable,quantity,barcode, categoryId,productName,genericName,currency,variations,function (msg) {
-
-        if(msg.success) {
-
-            store(req,  (good) => {
-                (good.success)? res.send(msg):res.send(good)
-            })
-        }else {
-            res.send(msg)
-        }
+    productsDb.addProduct(image_count,businessId,productId,descr,price,deliverable,quantity,barcode, categoryId,productName,genericName,currency,variations,function (msg) {
+            // TODO::figure out what the fuck this does
+        // if(msg.success) {
+        //
+        //     store(req,  (good) => {
+        //         (good.success)? res.send(msg):res.send(good)
+        //     })
+        // }else {
+        //     res.send(msg)
+        // }
+        res.send(msg)
     })
 
 })
@@ -353,16 +390,16 @@ router.post('/banner', upload.single('banner'),validateBusiness,function (req, r
     }
 })
 router.get('/banner',function (req, res, next) {
-    console.log("here")
+
     var businessId = req.body.businessId+".jpg"
     const path = __dirname.replace("routes","images/banners/"+businessId);
 
     if (fs.existsSync(path)){
         //    send file
-        console.log("exists")
+
         res.sendFile(path)
     }else {
-        console.log("doesnt")
+
         const path = __dirname.replace("routes","public/images/banner_ex2.jpg");
         res.sendFile(path)
     }

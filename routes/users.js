@@ -152,6 +152,10 @@ router.post('/cart/delete', function (req, res, next) {
         res.send(response)
     })
 })
+router.post('/v2/verify', function (req,res, next) {
+//     check if user exists and if not, create verification code, for number, store on users row and send back as response
+
+})
 router.get('/activity', function(req, res, next) {
   res.send('respond with a resource');
 });
