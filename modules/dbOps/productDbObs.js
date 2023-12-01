@@ -137,14 +137,15 @@ function genRandToken(range, callback) {
     return callback(text);
 }
 
-function addProduct(businessId, productId,description, price, deliverable,quantity, barcode,categoryId,productName,tag,currency,variations,callback){
+function addProduct(image_count,businessId, productId,description, price, deliverable,quantity, barcode,categoryId,productName,tag,currency,variations,callback){
+    console.log("called")
     insertTags(tag).then((tag)=>{
 
-        var sql = "INSERT INTO products (vendorId, productId, description, price, deliverable," +
+        var sql = "INSERT INTO products (image_count ,vendorId, productId, description, price, deliverable," +
             "quantity, barcode, categoryId, productName, timestamp, tag,currency) VALUES (?)"
-        var values = [[businessId,productId, description,price,deliverable, quantity,barcode, categoryId,productName, new Date().getTime(), tag,"1"]]
-
-
+        var values = [[image_count,businessId,productId, description,price,deliverable, quantity,barcode, categoryId,productName, new Date().getTime(), tag,"1"]]
+        console.log("this too")
+        console.log(values);
         if(variations!==undefined){
             insertInProductTable(sql, values).then(result => {
 
@@ -161,7 +162,7 @@ function addProduct(businessId, productId,description, price, deliverable,quanti
         }
 
     }).catch((msg)=>{
-        console.log(msg)
+
         return callback({success:false, code:500, response: msg})
     })
 
@@ -183,6 +184,7 @@ function orderItems(ownerId,items,callback){
 }
 function addProductImageIdentifier(identifier,productId, count,callback) {
     var sql = "INSERT INTO product_images (productId, identifier, count) VALUES (?)"
+    console.log(sql)
     connection.query(sql, [[productId,identifier,count]],function (err,result) {
         if(err){
             return callback({success:false,response:err})
@@ -199,7 +201,7 @@ function getReviews(productId, callback){
     })
 }
 function getImageIdentifier(productId, callback) {
-    var sql = "SELECT identifier FROM product_images WHERE productId = '"+ productId +"'"
+
     genericQueries.select("identifier",config.STNs.product_images,"productId",JSON.stringify(productId),function (msg) {
         return callback(msg)
     })
@@ -245,8 +247,24 @@ function getProducts(vendorId,callback){
 
 }
 
+function editProduct(productId,field, value, callback){
+
+    var sql = `UPDATE products SET ${field} = '${value.toString()}' WHERE productId = '${productId}'`;
+    connection.query(sql, function (err, res) {
+        if (err){
+            console.log(err)
+            throw err;
+        }else {
+            console.log(value)
+            return callback({success:true, code:200, response:res})
+        }
+    })
+
+}
+
 async function insertTags(tag) {
     return await new Promise(function (resolve, reject) {
+        console.log("has been called")
         var sql = "INSERT INTO tags (tagName) VALUES (?)";
         connection.query(sql, [tag],(err, result)=>{
             if(err){
@@ -418,5 +436,6 @@ module.exports = {
     discover:discover,
     getReviews:getReviews,
     insertTags:insertTags,
-    getVariations:getVariations
+    getVariations:getVariations,
+    editProduct:editProduct
 }

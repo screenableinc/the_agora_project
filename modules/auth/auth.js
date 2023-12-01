@@ -1,5 +1,5 @@
 var config = require("../CONFIG")
-var bcrypt = require('bcrypt')
+var bcrypt = require('bcryptjs')
 function authenticate(){
 
 }

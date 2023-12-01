@@ -106,7 +106,7 @@ router.get('/search',function (req, res, next) {
     }else {
       genericDb.search(q,{},function (msg) {
           if (source === 'mobile'){
-              console.log(msg)
+
               res.send(msg)
           }else{
 
@@ -136,7 +136,7 @@ router.post('/ads',function (req, res, next) {
 
 })
 router.post("/location/edit", function (req, res, next) {
-  //for now..only business in mind
+  //for now...only business in mind
   var cookies = req.signedCookies;
   var lat = req.body.lat;
   var long = req.body.long;

@@ -3,12 +3,17 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var firebase_admin = require('firebase-admin')
 var bodyparser = require('body-parser')
 var favicon= require('serve-favicon')
 var indexRouter = require(path.join(__dirname,'routes/index'));
 var usersRouter = require('./routes/users');
 var productsRouter = require('./routes/products')
 var categoriesRouter = require('./routes/categories')
+
+var messagingRouter = require('./routes/messaging')
+
+
 var ordersRouter = require('./routes/orders')
 var businessHubRouter = require('./routes/businessHub')
 var checkoutRouter = require('./routes/checkout')
@@ -39,6 +44,7 @@ app.use('/orders',ordersRouter);
 app.use('/business',businessHubRouter);
 app.use('/categories', categoriesRouter);
 app.use('/checkout',validateUser,checkoutRouter)
+app.use('/messaging', messagingRouter);
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   // console./log(req)
@@ -121,7 +127,25 @@ function validateUser(req, res, next) {
 
 
 }
-// error handler
+// firebase
+// firebase_admin.initializeApp({
+//     credential: firebase_admin.credential.cert({
+//         projectId: 'vendnbuy',
+//         privateKey: 'AIzaSyCLtsW0D_Kz0-ZTTA0UHSuICGmOCrgGu3Q',
+//         clientEmail: 'firebase-adminsdk-bai1c@vendnbuy.iam.gserviceaccount.com',
+//     }),
+//     databaseURL: 'https://vendnbuy.firebaseio.com',
+// });
+
+
+
+
+
+
+
+
+    // error handler
+
 app.use(function(err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;

@@ -3,6 +3,7 @@ var router = express.Router();
 var productsDb = require('../modules/dbOps/productDbObs.js')
 var fs = require("fs")
 var multer = require("multer")
+console.log("WrQCq6gqGJU_8CxMTW_DEDDJhn_".length)
 
 
 
@@ -22,7 +23,7 @@ router.get('/product', function (req, res, next) {
         if(msg.code===200){
             var product = msg.response[0]
             res.render("product",{product:JSON.stringify(product)})
-
+            
         }else {
             res.redirect("/")
         }
@@ -64,6 +65,8 @@ router.get('/variants',function (req, res, next) {
     })
 })
 
+
+
 router.post("/delete",function (req, res, next) {
     var productId = req.body.productId
 //    TODO secure this to only user and make sure no one has order before deleting
@@ -72,63 +75,86 @@ router.post("/delete",function (req, res, next) {
     })
 })
 router.get("/images", function (req, res, next) {
+    // TODO:: for proof of concept, i'll use a different fetching protocal for
+    //     products with multiple images
+
     var productId = req.query.productId;
+    var image_count = req.query.image_count;
 
-    productsDb.getImageIdentifier(productId, function (msg) {
+    //products added from mobile have a longer productId consisting of 27 characters
+    //let the logic of figuring out how many images are there and which one to query be done client-side
 
-        if(!msg.success){
-        //    send generic pic
-            const path = __dirname.replace("routes","images/products/default.jpg");
-            res.sendFile(path)
-        }else {
-
-            var imagename;
-            try {
-                imagename =  msg.response[0].identifier+".jpg"
-            }catch (e) {
-                imagename="default.jpg"
-            }
-
-
-
-            const path = __dirname.replace("routes","images/products/"+imagename);
-
-            if (fs.existsSync(path)){
-                const stat = fs.statSync(path)
-                const fileSize = stat.size
-                const range = req.headers.range
-                if (range) {
-                    const parts = range.replace(/bytes=/, "").split("-")
-                    const start = parseInt(parts[0], 10)
-                    const end = parts[1]
-                        ? parseInt(parts[1], 10)
-                        : fileSize-1
-                    const chunksize = (end-start)+1
-                    const file = fs.createReadStream(path, {start, end})
-                    const head = {
-                        'Content-Range': `bytes ${start}-${end}/${fileSize}`,
-                        'Accept-Ranges': 'bytes',
-                        'Content-Length': chunksize,
-                        'Content-Type': 'image/jpeg',
-                    }
-                    res.writeHead(206, head);
-                    file.pipe(res);
-                } else {
-                    const head = {
-                        'Content-Length': fileSize,
-                        'Content-Type': 'image/jpeg',
-                    }
-                    res.writeHead(200, head)
-                    fs.createReadStream(path).pipe(res)
+    function returnfile(path) {
+        if (fs.existsSync(path)) {
+            const stat = fs.statSync(path)
+            const fileSize = stat.size
+            const range = req.headers.range
+            if (range) {
+                const parts = range.replace(/bytes=/, "").split("-")
+                const start = parseInt(parts[0], 10)
+                const end = parts[1]
+                    ? parseInt(parts[1], 10)
+                    : fileSize - 1
+                const chunksize = (end - start) + 1
+                const file = fs.createReadStream(path, {start, end})
+                const head = {
+                    'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+                    'Accept-Ranges': 'bytes',
+                    'Content-Length': chunksize,
+                    'Content-Type': 'image/jpeg',
                 }
-                // res.sendFile(path)
-            }else {
-                const path = __dirname.replace("routes","images/products/default.jpg");
-                res.sendFile(path)
+                res.writeHead(206, head);
+                file.pipe(res);
+            } else {
+                const head = {
+                    'Content-Length': fileSize,
+                    'Content-Type': 'image/jpeg',
+                }
+                res.writeHead(200, head)
+                fs.createReadStream(path).pipe(res)
             }
+            // res.sendFile(path)
+        } else {
+            const path = __dirname.replace("routes", "images/products/default.jpg");
+            res.sendFile(path)
         }
+    }
+    if(productId.length>26){console.log("called")
+    //    check image count length
+    //    for now, I am only hardcoding as jpg
+        if(image_count===undefined){
+            //if no image count is specified, let the default be image '0'
+            image_count=0
+        }
+        console.log("wise "+image_count);
+        const path = __dirname.replace("routes", "images/products/" + image_count+productId+".jpg");
+        returnfile(path)
+    }else {
+        console.log("now we're cooking")
+        productsDb.getImageIdentifier(productId, function (msg) {
+
+
+            if (!msg.success) {
+                //    send generic pic
+                const path = __dirname.replace("routes", "images/products/default.jpg");
+                res.sendFile(path)
+            } else {
+
+                var imagename;
+                try {
+                    imagename = msg.response[0].identifier + ".jpg"
+                } catch (e) {
+                    imagename = "default.jpg"
+                }
+
+
+                const path = __dirname.replace("routes", "images/products/" + imagename);
+                returnfile(path)
+
+            }
+        })
+    }
     })
-})
 
 
 

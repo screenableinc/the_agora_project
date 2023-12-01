@@ -9,6 +9,43 @@ const password = 'pvDRuHT{Z7%2'
 let bulkSMSkey = "2eeca676d357a7313a58fbb075d41431"
 let bulkSMSlink = "https://bulksms.zamtel.co.zm/api/v2.1/action/send/api_key/:api_key/contacts/:contacts/"
 //pass phone number of agoran or email, order total, productname,variation, vendor name
+function sendCode(phone,code, callback){
+    //todo::make this code less repetitive
+    let message = `Hi! Your vendNbuy verification code is ${code.toString()} `;
+    message=encodeURIComponent(message)
+    console.log(message)
+    let link = `/api/v2.1/action/send/api_key/${bulkSMSkey}/contacts/${phone}/senderId/VENDnBUY/message/${message}`
+    console.log(link)
+    const options = {
+        hostname: 'bulksms.zamtel.co.zm',
+        port: 443,
+        path: link,
+        method: 'GET',
+        headers: {
+            'Accept': 'plain/html',
+            'Accept-Encoding': '*',
+        }
+    }
+
+    const req = https.request(options, res => {
+        console.log(`statusCode: ${res.statusCode}`);
+        console.log('headers:', res.headers);
+
+        res.on('data', d => {
+            process.stdout.write(d)
+        })
+    })
+
+
+    req.on('error', error => {
+        return callback({"code":500})
+        // alert developer
+    })
+
+    req.end()
+    return callback({"code":69})
+}
+
 function orderAccept(email, phone,vendorName, total, fullname,productName,variation,quantity, type) {
 
     //    type should be 1 for email, 2 for text, 0 for both
@@ -101,5 +138,7 @@ function sendMail(email,html, subject, callback) {
 }
 
 module.exports = {
-    orderAccept:orderAccept
+    orderAccept:orderAccept,
+    sendCode:sendCode
+
 }
