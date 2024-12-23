@@ -64,62 +64,67 @@ function search_products(ret_cols, where,qs, callback) {
 //todo...fix this horrible stupidly repetitive code later you lazy fool
 function discover_products(ret_cols, table,join ,where, limit,aggregates, order, callback){
 
-
-
-    var limit_q = function () {
-        if (limit===null){
-            return ""
-        }else {
-            return " LIMIT "+limit
-        }
-    }
-    "businesses ON businesses.businessId = products.vendorId"
-    var join_q = function () {
-        if(join===null){
-
-            return ""
-        }
-        console.log(join,"llllllllllsadsd")
-        return join
-    }
-    var aggregates_q = function () {
-        if (aggregates===null){
-            return ""
-        }
-        else {
-            var concat = ""
-            var keys = Object.keys(aggregates)
-            for (var i = 0; i < keys.length; i++) {
-                concat = concat + keys[i] +" " +aggregates[keys[i]]+" "
+    try {
+        var limit_q = function () {
+            if (limit===null){
+                return ""
+            }else {
+                return " LIMIT "+limit
             }
-            return concat
         }
-    }
-    var column_q = function () {
-        if(ret_cols.length===1){
-            return ret_cols[0]
-        }else {
-            var concated = ""
-            for (var i = 0; i < ret_cols.length; i++) {
-                if(i===0){
-                    concated =ret_cols[i]
-                }else {
-                    concated =concated+", "+ ret_cols[i]
+        "businesses ON businesses.businessId = products.vendorId"
+        var join_q = function () {
+            if(join===null){
+
+                return ""
+            }
+            console.log(join,"llllllllllsadsd")
+            return join
+        }
+        var aggregates_q = function () {
+            if (aggregates===null){
+                return ""
+            }
+            else {
+                var concat = ""
+                var keys = Object.keys(aggregates)
+                for (var i = 0; i < keys.length; i++) {
+                    concat = concat + keys[i] +" " +aggregates[keys[i]]+" "
                 }
+                return concat
             }
-            return concated
         }
+        var column_q = function () {
+            if(ret_cols.length===1){
+                return ret_cols[0]
+            }else {
+                var concated = ""
+                for (var i = 0; i < ret_cols.length; i++) {
+                    if(i===0){
+                        concated =ret_cols[i]
+                    }else {
+                        concated =concated+", "+ ret_cols[i]
+                    }
+                }
+                return concated
+            }
+        }
+
+
+        var order_q = function (order) {
+            if (order===null){
+                return ""
+            }else {
+                return order
+            }
+        }
+        return callback("SELECT "+ column_q() + " FROM " + table+" " + join_q() +" "+ getwhere(where, "<") + " " +aggregates_q()+ order_q(order) +limit_q())
+    }catch (e){
+        console.log(e)
     }
 
 
-    var order_q = function (order) {
-        if (order===null){
-            return ""
-        }else {
-            return order
-        }
-    }
-    return callback("SELECT "+ column_q() + " FROM " + table+" " + join_q() +" "+ getwhere(where, "<") + " " +aggregates_q()+ order_q(order) +limit_q())
+
 
 }
 

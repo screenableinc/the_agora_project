@@ -39,15 +39,18 @@ router.get('/checkout', function (req, res, next) {
 })
 
 //TODO technically anyone can approve orders, fix this!
-router.post('/approve',function (req, res, next) {
+router.post('/respond',function (req, res, next) {
 //    send message that order has been seen and accepted
 //    todo:remember to alter quantities
     let vendorName = req.body.vendorName;
     let productName = req.body.productName;
     let variation = req.body.variation;
     let username = req.body.username;
+    let response = req.body.response;
+    console.log(response+"£££££");
+
     //get the order id approve order and notify user
-    ordersDb.approveOrder(req.body.orderId,vendorName,productName,variation, username,function (msg) {
+    ordersDb.respondToOrder(req.body.orderId,vendorName,productName,variation, username,response,function (msg) {
         //notify user
 
         res.send(msg)
@@ -61,6 +64,15 @@ router.post('/reject', function (req, res, next) {
     ordersDb.rejectOrder(req.body.id, function (msg) {
         res.send(msg)
     })
+})
+
+// GET ALL ORDERS
+router.get('/all', function (req, res, next) {
+
+    ordersDb.getUserOrders(req.query.userId, function (msg) {
+        res.send(msg);
+    });
+
 })
 
 

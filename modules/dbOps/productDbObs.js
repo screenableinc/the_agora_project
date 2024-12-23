@@ -4,6 +4,8 @@ var parameterizedQueries = require('../dbOps/parameterize.js');
 var config = require('../CONFIG')
 
 
+
+
 let sql_business_join = "JOIN businesses ON businesses.businessId = products.vendorId "
 function getCategories(callback) {
     var sql  = "SELECT * FROM "+config.STNs.categories
@@ -14,6 +16,8 @@ function getCategories(callback) {
             return callback({success:true, code:200, response:result})
         }
     })
+
+
 }
 async function insertInProductTable(sql, values){
     return await new Promise(function (resolve, reject) {
@@ -217,6 +221,13 @@ function getVariations(productId, callback){
         return callback({success:true, response:result})
     })
 }
+function getOrderVariations(variationId, callback) {
+    var sql = "SELECT * FROM variations WHERE variationId = '"+ variationId +"'"
+    connection.query(sql, function (err, result) {
+        if (err) throw err;
+        return callback({success:true, response:result})
+    })
+}
 function getProduct(productId, callback) {
     parameterizedQueries.alpha_select(['products.*,currencies.*, businesses.businessId, businesses.businessName'],config.STNs.products, "JOIN businesses ON businesses.businessId = products.vendorId JOIN currencies ON currencies.id = products.currency ", {productId: productId},null,null,null,function (sql){
         connection.query(sql, function (err, result){
@@ -236,7 +247,7 @@ function getProducts(vendorId,callback){
     // genericQueries.select("*", config.STNs.products,"vendorId",JSON.stringify(vendorId),function (msg) {
     //     return callback(msg)
     // })
-    var sql = "SELECT * FROM products JOIN categories ON categories.categoryId = products.categoryId WHERE vendorId = "+JSON.stringify(vendorId)+" "
+    var sql = "SELECT * FROM products JOIN categories ON categories.categoryId = products.categoryId WHERE vendorId = "+JSON.stringify(vendorId)+" AND deleted = 0"
     connection.query(sql,function (err, result) {
         if(err){
             throw err;
@@ -375,26 +386,27 @@ function variants(callback) {
         }
     })
 }
-function deleteProduct(where,callback) {
-    parameterizedQueries.deleteEntry("products",where,function (sql) {
-        connection.query(sql, function (err, result) {
-            if(err){
-                console.log(err)
-                return callback({success:false,code:500})
-            }else {
-                return callback({success:true,code:200})
-            }
-        })
+function deleteProduct(productId, vendorId, callback) {
+
+    let sql_ = `UPDATE products SET deleted = 1 WHERE productId = '${productId}' AND vendorId = '${vendorId}'`
+
+    connection.query(sql_, function (err, res) {
+        if (err) throw err;
+        return callback({success:true, code:200, response:res})
     })
 }
 function discover(last_timestamp, callback){
 
     var where = (last_timestamp==="00") ? {}:{"timestamp":last_timestamp}
 
-    parameterizedQueries.discover_products(["products.*,currencies.symbol,businesses.businessName"],"products","JOIN currencies ON currencies.id = products.currency "+sql_business_join,where,6,{"GROUP BY":"products.productId", "ORDER BY": "timestamp"},"DESC", function (sql){
+    parameterizedQueries.discover_products(["products.*,currencies.symbol,businesses.businessName, CASE \n" +
+    "        WHEN cart.productId IS NOT NULL THEN 1 \n" +
+    "        ELSE 0 \n" +
+    "    END AS inCart"],"products","JOIN currencies ON currencies.id = products.currency LEFT JOIN cart ON cart.productId=products.productId AND cart.username = '+260970519299' "+sql_business_join,where,6,{"GROUP BY":"products.productId", "ORDER BY": "timestamp"},"DESC", function (sql){
         connection.query(sql,function (err, result){
-            console.log(sql)
+
             if(err){
+                throw err
 
                 return callback({success:false,code:500,err:err})
             }else {
@@ -406,7 +418,10 @@ function discover(last_timestamp, callback){
 }
 function getLatestProducts(callback){
 
-    parameterizedQueries.alpha_select(["products.*,currencies.symbol,businesses.businessName"],"products","JOIN currencies ON currencies.id = products.currency "+sql_business_join,{},6,{"GROUP BY":"productId", "ORDER BY": "timestamp"},"DESC",function(sql){
+    parameterizedQueries.alpha_select(["products.*,currencies.symbol,businesses.businessName, CASE \n" +
+    "        WHEN cart.productId IS NOT NULL THEN 1 \n" +
+    "        ELSE 0 \n" +
+    "    END AS inCart"],"products","JOIN currencies ON currencies.id = products.currency LEFT JOIN cart ON cart.productId=products.productId AND cart.username = '+260970519299'"+sql_business_join,{},6,{"GROUP BY":"productId", "ORDER BY": "timestamp"},"DESC",function(sql){
         connection.query(sql, function (err, result) {
 
             if(err){
@@ -437,5 +452,6 @@ module.exports = {
     getReviews:getReviews,
     insertTags:insertTags,
     getVariations:getVariations,
-    editProduct:editProduct
+    editProduct:editProduct,
+    getOrderVariations:getOrderVariations
 }

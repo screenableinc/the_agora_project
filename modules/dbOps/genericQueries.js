@@ -58,20 +58,47 @@ function del(table,where,callback) {
 }
 function search(value,where,callback) {
     parameterize.search_products(["products.*", "businesses.businessName","currencies.symbol","locations.*"],where,value,function (sql) {
-        console.log(sql)
-        var sql = "SELECT products.*, businesses.businessName FROM products JOIN businesses ON businesses.businessId = products.vendorId WHERE productName LIKE '%"+value+"%'"
 
-        connection.query(sql, function (err, result) {
-            if(err)throw err;
-            return callback({success:true, code:200, response:result})
-        })
-    })
+        var sql = "SELECT products.*, currencies.symbol, locations.lat, locations.lng, businesses.businessName FROM products LEFT JOIN locations ON locations.vendorId = products.vendorId JOIN businesses ON businesses.businessId = products.vendorId JOIN currencies on currencies.id = products.currency WHERE productName LIKE %"+value+"%";
+        const query = `SELECT 
+    products.*, 
+    currencies.symbol, 
+    locations.lat, 
+    locations.lng, 
+    businesses.businessName,
+    CASE 
+        WHEN cart.productId IS NOT NULL THEN 1 
+        ELSE 0 
+    END AS inCart
+FROM 
+    products
+LEFT JOIN 
+    locations ON locations.vendorId = products.vendorId
+JOIN 
+    businesses ON businesses.businessId = products.vendorId
+JOIN 
+    currencies ON currencies.id = products.currency
+LEFT JOIN 
+    cart ON cart.productId = products.productId AND cart.username = ?
+WHERE 
+    productName LIKE ?
+`;
+
+
+console.log(value, where)
+connection.query(query,["+260970519299","%" + value +"%"], function (err, result) {
+    if(err)throw err;
+
+    return callback({success:true, code:201, response:result})
+})
+})
 
 }
 
 function barcode_search(code,callback){
     parameterize.alpha_select()
 }
+
 
 function addOrEditLocation(id,lat,lng,city,country,callback) {
     entryExists(config.STNs.locations,"vendorId",id,function (msg) {
@@ -137,6 +164,14 @@ function insertVCode(vcode,callback){
     var sql = "UPDATE agorans SET vcode="+vcode+"";
 }
 
+function subscribe(name, phone, email,role, callback){
+    var sql = "INSERT INTO subscribers (name, phone, email,role) VALUES (?)"
+    connection.query(sql,[[name, phone, email,role]], function (err, result) {
+        if (err) throw err;
+        return callback({success:true, code:200})
+    })
+}
+
 module.exports={
     select:select,
     addOrEditLocation:addOrEditLocation,
@@ -144,6 +179,7 @@ module.exports={
     currencySelect:currencies,
     del:del,
     exists:exists,
-    entryExists:entryExists
+    entryExists:entryExists,
+    subscribe:subscribe
     // selectAll:selectAll
 }

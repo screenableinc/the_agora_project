@@ -9,6 +9,7 @@ var jwt  = require('jsonwebtoken');
 var notify = require('../modules/notify')
 
 
+
 //authentication
 function validateBusiness(req, res, next){
 
@@ -86,6 +87,13 @@ function externalAuth(req,callback){
     });
 
 }
+
+router.get('/balance', function (req, res, next) {
+    businessDb.getBalance(req.body.businessId, function (msg) {
+        msg["success"] = true;
+        res.send(msg)
+    })
+})
 function store(req, callback){
     var productId = req.body.productId;
     var businessId = req.body.businessId
@@ -108,9 +116,37 @@ function store(req, callback){
     })
 
 }
+
+router.get('/store_details', function(req, res, next){
+    let vendorId = req.body.businessId;
+    businessDb.getBusinessV2(vendorId, function (msg) {
+        res.send(msg)
+    })
+
+})
+router.get('/details', function (req, res, next) {
+    var vendorId = req.body.vendorId;
+
+})
+router.get('/transactions', function (req, res, next) {
+    var vendorId = req.body.businessId
+    // con(vendorId)
+    businessDb.getDigitalTransactions(vendorId, function (ret) {
+        res.send(ret)
+    })
+
+});
+router.post("/delete",function (req, res, next) {
+    var productId = req.body.productId
+//    TODO secure this to only user and make sure no one has order before deleting
+    productsDb.deleteProduct(productId, req.body.businessId,function (msg) {
+        res.send(msg)
+    })
+})
 var storage = multer.diskStorage({
     destination:"./images",
     filename:function (req, file, cb) {
+        req.headers['businessid']
         var path = req._parsedUrl.path
         var prefix=""
         if (path.trim()=="/logo"){
@@ -118,7 +154,7 @@ var storage = multer.diskStorage({
         }else if (path.trim()=="/banner"){
             prefix="/banners/"
         }
-        var businessId = req.body.businessId
+        var businessId = req.headers['businessid']
 
         _filename =prefix + businessId+".jpg";
 
@@ -135,6 +171,9 @@ var genericDb = require('../modules/dbOps/genericQueries')
 var cookieMgr = require('../modules/cookieManager.js')
 var auth = require('../modules/auth/auth')
 const ordersDb = require("../modules/dbOps/ordersDbOp");
+const {getBusinessPendingOrders} = require("../modules/dbOps/ordersDbOp");
+
+// const {price} = require("../public/js/templateBuilders/template");
 
 router.get("/",function (req, res, next) {
     var businessId = req.query.vendorId
@@ -177,6 +216,14 @@ router.get('/login', validateBusiness,function (req, res, next) {
 
     res.render('businessLogin',{})
 })
+router.post('/updateFCM', function (req, res, next) {
+    let FCMtoken = req.body.FCMtoken;
+    businessDb.updateFCMtoken(FCMtoken, req.body.businessId, function (msg) {
+        res.send(msg)
+    })
+
+
+})
 
 router.post("/phoneverify", function (req, res, next){
     var code = req.body.code;
@@ -187,6 +234,7 @@ router.post("/phoneverify", function (req, res, next){
     })
 
 })
+router.get('')
 
 router.post("/join", validateBusiness,function (req, res, next) {
     var businessId = req.body.businessId;
@@ -195,8 +243,9 @@ router.post("/join", validateBusiness,function (req, res, next) {
     var password = req.body.password;
     var email = req.body.email;
     var description = req.body.description
+    var fcm_token = req.body.fcm_token
 
-    businessDb.authJoin(businessId,businessName,description,category,password,email,function (msg) {
+    businessDb.authJoin(businessId,businessName,description,category,password,email,fcm_token,function (msg) {
 
         if(msg.code===100){
             let token = jwt.sign({id:businessId,category:"vendor"},req.app.get('secretKey'), {expiresIn:'7d'})
@@ -213,11 +262,19 @@ router.post("/join", validateBusiness,function (req, res, next) {
 })
 router.get('/products/all',validateBusiness,function (req, res, next) {
 
-    console.log("called")
 
-    productsDb.getProducts(req.body.businessId, function (msg) {
 
-        res.send(msg)
+    productsDb.getProducts(req.body.businessId, function (r) {
+        // also get pending orders
+        getBusinessPendingOrders(req.body.businessId, function (msg) {
+
+            r["pendingOrders"] = msg["response"][0]["pendingOrders"]
+            r["sales"] = msg["response"][0]["successfulOrders"]
+            console.log(msg)
+            res.send(r)
+        })
+
+
     })
 
 });
@@ -278,9 +335,12 @@ router.post('/additem',uploadItemImage.any("file"),validateBusiness,function (re
 router.post('/login', validateBusiness,function (req, res, next) {
     var businessId = req.body.businessId
     var password = req.body.password
+    let fcm_token = req.body.fcm_token;
 
 
-    businessDb.authLogin(businessId,password,function (msg) {
+
+    businessDb.authLogin(businessId,password,fcm_token,function (msg) {
+        console.log(msg)
         if(msg.success){
             let token = jwt.sign({id:businessId,category:"vendor"},req.app.get('secretKey'), {expiresIn:'7d'})
             cookieMgr.set(res,"businessAuth",token,600000000,function () {
@@ -326,6 +386,8 @@ router.get('/dashboard',validateBusiness, function (req, res, next) {
 
 })
 
+
+
 router.get('/notifications', validateBusiness,function (req, res, next){
     var token = new auth.auth_check(req,0).auth
 
@@ -349,6 +411,7 @@ router.get('/top',function (req, res, n) {
 })
 router.get('/logo', function (req, res, next) {
     var businessId = req.query.businessId+".jpg"
+    console.log(businessId);
     const path = __dirname.replace("routes","images/logos/"+businessId);
 
     if (fs.existsSync(path)){
@@ -360,8 +423,10 @@ router.get('/logo', function (req, res, next) {
     }
 })
 router.post('/logo', upload.single('logo'),function (req, res, next) {
-    var businessId = req.body.businessId+".jpg"
+    console.log(req.headers['businessid'], "rr");
+    var businessId = req.headers['businessid']+".jpg"
     const path = __dirname.replace("routes","pictures/"+businessId);
+    console.log(path)
 
     if (fs.existsSync(path)){
         //    send file
@@ -377,8 +442,8 @@ let handle = function(req, res, next){
     return next()
 }
 router.post('/banner', upload.single('banner'),validateBusiness,function (req, res, next) {
-    console.log(req.body.businessId,"ssssssssss")
-    var businessId = req.body.businessId+".jpg"
+
+    var businessId = req.headers['businessid']+".jpg"
     const path = __dirname.replace("routes","images/"+businessId);
 
     if (fs.existsSync(path)){

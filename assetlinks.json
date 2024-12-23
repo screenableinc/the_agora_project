@@ -1,0 +1,11 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.vendnbuy.ent.vendnbuy",
+      "sha256_cert_fingerprints":
+      ["5C:06:55:AD:20:38:E5:0C:6A:37:41:F0:B0:CF:DA:69:20:FB:38:21:F5:24:F0:AC:05:34:78:63:F7:79:8E:87"]
+    }
+  }
+]

@@ -17,6 +17,21 @@ function userExists(username, phoneNumber, emailAddress,callback){
         }
     })
 }
+
+
+function userExists2(username, callback){
+    var sql  = "SELECT * from agorans WHERE username = '"+ username +"'"
+
+    connection.query(sql, function (err, result) {
+        if (err) throw err;
+        if (result.length===0){
+            console.log(username,result)
+            return callback(false)
+        }else {
+            return callback(true)
+        }
+    })
+}
 function authLogin(identifier,password, callback) {
     var sql  = "SELECT * from agorans WHERE username = '"+ identifier +"' OR phoneNumber = '"+ identifier +"' " +
         "OR emailAddress ='"+ identifier+"'"
@@ -51,12 +66,25 @@ function followVendor(username, vendorId, callback){
     })
 }
 
-function getVendorsFollowing(username,vendorId,callback){
+function getVendorsFollowing(username,callback){
     parameterizedQueries.alpha_select(["vendorId"], "user_fav_vendors", null, {userId: username}, null,null,null, function(sql){
         connection.query(sql, function (err, result){
             if (err)throw err;
             return callback({code:200, response: result})
         })
+    })
+}
+
+function registerUser(userId, countryCode, callback) {
+    // for now...userid and phone number are the same
+    let sql = "INSERT into agorans (username, phoneNumber, countryCode) VALUES (?)"
+    let values = [userId, userId, countryCode];
+    connection.query(sql, [values], function (err, result) {
+        if(err){
+            throw err;
+        }else{
+            return callback({success:true, code:100})
+        }
     })
 }
 
@@ -86,14 +114,18 @@ function authJoin(username, emailAddress, phoneNumber,password,fullName,countryC
         }
     )
 }
-
-function addToCart(username,productId,variationId,vendorId,callback) {
-    var sql = "INSERT INTO cart (productId,username,variationId, vendorId) VALUES (?)"
-    var values =[[productId,username,variationId, vendorId]]
+function updateFCMtoken(token, userId, callback){
+//
+    var sql = "Update "
+}
+function addToCart(username,productId,variationId,vendorId,qty,callback) {
+    var sql = "INSERT INTO cart (productId,username,variationId, vendorId,qty) VALUES (?)"
+    var values =[[productId,username,variationId, vendorId,qty]]
 
 
     connection.query(sql,values,function (err,result) {
         if(err){
+            console.log(err);
 
             return callback({success:false,response:err,code:500,err:err.errno})
         }else {
@@ -119,8 +151,32 @@ function cartCount(username, callback){
     })
 }
 
+
+function billing_address(info, callback) {
+    const sql = `
+    INSERT INTO user_billing_addresses 
+    (user_id, country, province, city, phone, area, address, email) 
+    VALUES (?, ?, ?, ?, ?, ?, ?,?)
+  `;
+    console.log(info)
+
+    connection.query(sql,[info["userId"],info["country"],info['state'],info['city'],info['phone_number'],info['area'],info['street_address'],info['email']], function (err, result) {
+        if (err) throw err;
+        return callback({success:true, code:200})
+    })
+}
+function get_billing_addresses(userId, callback){
+    let sql  = `SELECT * FROM user_billing_addresses WHERE user_id = '${userId}'`;
+    console.log(sql)
+    connection.query(sql, function (err, result) {
+        if (err) throw err;
+        return callback({success:true, code:200, response:result})
+
+    })
+}
+
 function deleteItemFromCart(username, productId, variationId, callback) {
-    let sql = "DELETE FROM cart WHERE username="+username+" AND productId ="+productId+" AND variationId="+variationId
+    let sql = "DELETE FROM cart WHERE username="+username+" AND productId ='"+productId+"' AND variationId='"+variationId+"'"
     connection.query(sql, function (err, res){
         if (err) throw err;
         return callback({success:true})
@@ -184,23 +240,21 @@ async function getVariations(results){
 function getCart(username, callback) {
     // var sql = "SELECT * FROM cart JOIN products ON products.productId = cart.productId WHERE username = "+ JSON.stringify(username) +" ";
     //todo:: Warning callback hell ahead
-    parameterizedQueries.alpha_select(["cart.*","products.*","currencies.*","businesses.businessName"],"cart", " JOIN products ON products.productId = cart.productId JOIN currencies ON currencies.id = products.currency JOIN businesses ON businesses.businessId = products.vendorId ",
+    parameterizedQueries.alpha_select(["cart.*","products.*","currencies.*","businesses.businessName","(SELECT GROUP_CONCAT(v.variantName,': ',v.value) from variations v WHERE v.variationId = cart.variationId) as v_descr"],"cart", " JOIN products ON products.productId = cart.productId JOIN currencies ON currencies.id = products.currency JOIN businesses ON businesses.businessId = products.vendorId ",
         {username:username},null,null,null,function (sql) {
         
         connection.query(sql ,function (err, result) {
                 if(err){
 
+
                     return callback({success:false,code:500})
                 }else {
+                    console.log(result)
 
-                    //getting username piggy backed off of this callback
-                    //pass result to variations function
-                    getVariations(result).then(result=>{
+                    
 
-                        return callback({success:true, response:result,code:200,username:username})
-                    }).catch(err=>{
-                        throw err
-                    })
+                    return callback({success:true, response:result,code:200,username:username})
+
 
                 }
             })
@@ -212,13 +266,20 @@ function getCart(username, callback) {
     // })
 
 }
+function setName(userId, name, callback) {
+    let sql = "UPDATE agorans SET fullName = '" + name +"' where username = '"+userId+"'";
+    connection.query(sql, function (err, result) {
+        if (err) throw err;
+        return callback({code: 100, success:true})
+    })
+}
 
 function store_picture() {
 //cdn
 }
 module.exports = {
     authLogin:authLogin,authJoin:authJoin,deleteItemFromCart:deleteItemFromCart,
-    addToCart:addToCart,getCart:getCart, followVendor:followVendor, getVendorsFollowing:getVendorsFollowing, cartCount:cartCount
-
+    addToCart:addToCart,getCart:getCart, followVendor:followVendor, getVendorsFollowing:getVendorsFollowing, cartCount:cartCount,
+    userExists2:userExists2, register:registerUser, setName:setName,billing_address:billing_address, get_billing_addresses:get_billing_addresses
 }
 

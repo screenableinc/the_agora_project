@@ -3,7 +3,7 @@ var router = express.Router();
 var productsDb = require('../modules/dbOps/productDbObs.js')
 var fs = require("fs")
 var multer = require("multer")
-console.log("WrQCq6gqGJU_8CxMTW_DEDDJhn_".length)
+
 
 
 
@@ -13,7 +13,7 @@ router.get('/variations', function (req, res, next) {
     // console.log('Wise', productId);
     productsDb.getVariations(productId, function (msg) {
         msg['code']=200;
-        console.log('Wise', msg);
+
         res.send(msg)
     })
 })
@@ -53,8 +53,11 @@ router.get('/latest',function (req, res, next) {
 
 
 router.get("/discover", function (req, res, next){
+
     var last_timestamp = req.query.last_timestamp
+
     productsDb.discover(last_timestamp, function (msg){
+        console.log("called")
         res.send(msg)
     })
 })
@@ -65,15 +68,16 @@ router.get('/variants',function (req, res, next) {
     })
 })
 
+router.get('/ordervariations', function (req, res, next) {
+    var variationId = req.query.variationId;
+    productsDb.getOrderVariations(variationId, function (msg) {
 
-
-router.post("/delete",function (req, res, next) {
-    var productId = req.body.productId
-//    TODO secure this to only user and make sure no one has order before deleting
-    productsDb.deleteProduct({productId:JSON.stringify(req.body.productId)},function (msg) {
         res.send(msg)
     })
 })
+
+
+
 router.get("/images", function (req, res, next) {
     // TODO:: for proof of concept, i'll use a different fetching protocal for
     //     products with multiple images
@@ -119,7 +123,8 @@ router.get("/images", function (req, res, next) {
             res.sendFile(path)
         }
     }
-    if(productId.length>26){console.log("called")
+
+    if(productId.length>20){console.log("called")
     //    check image count length
     //    for now, I am only hardcoding as jpg
         if(image_count===undefined){
@@ -128,6 +133,7 @@ router.get("/images", function (req, res, next) {
         }
         console.log("wise "+image_count);
         const path = __dirname.replace("routes", "images/products/" + image_count+productId+".jpg");
+        console.log(path)
         returnfile(path)
     }else {
         console.log("now we're cooking")

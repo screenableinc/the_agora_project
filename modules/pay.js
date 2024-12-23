@@ -31,12 +31,7 @@ async function makePayment(data) {
 }
 
 
-// Example usage:
-const paymentData = {
-    amount: 1000,
-    recipient: 'John Doe',
-    // Add any other payment-related data here
-};
+
 
 
 module.exports={

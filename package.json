@@ -7,7 +7,6 @@
   },
   "dependencies": {
     "axios": "^0.26.1",
-    
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
     "cloudinary": "^1.20.0",
@@ -17,7 +16,7 @@
     "express-jwt": "^6.0.0",
     "express-useragent": "^1.0.15",
     "firebase": "^9.19.1",
-    "firebase-admin": "^11.5.0",
+    "firebase-admin": "^11.11.1",
     "handlebars": "^4.7.7",
     "hbs": "~4.0.4",
     "http-errors": "~1.6.3",
@@ -29,6 +28,7 @@
     "nodemailer": "^6.6.3",
     "serve-favicon": "^2.5.0",
     "ssh2": "^1.11.0",
-    "tus-js-client": "^1.8.0"
+    "tus-js-client": "^1.8.0",
+    "uuid": "^10.0.0"
   }
 }
