@@ -17,15 +17,27 @@ router.get('/variations', function (req, res, next) {
         res.send(msg)
     })
 })
+
+// get products for vendor
+router.get('/products', function (req, res, next) {
+    let sortBy = req.query.sortBy;
+    const sortOption = req.query.sortOption || "relevance";
+    productsDb.getProducts(req.query.vendorId,sortOption, function (msg) {
+        res.send(msg)
+
+    })
+})
+
+
 router.get('/product', function (req, res, next) {
     var productId = req.query.productId;
     productsDb.getProduct(productId,function (msg) {
         if(msg.code===200){
-            var product = msg.response[0]
-            res.render("product",{product:JSON.stringify(product)})
+
+            res.send(msg)
             
         }else {
-            res.redirect("/")
+            // res.redirect("/")
         }
     })
 })
@@ -54,10 +66,12 @@ router.get('/latest',function (req, res, next) {
 
 router.get("/discover", function (req, res, next){
 
-    var last_timestamp = req.query.last_timestamp
+    let page = req.query.page;
+    let username = req.query.username;
+    console.log(page)
 
-    productsDb.discover(last_timestamp, function (msg){
-        console.log("called")
+    productsDb.discover(page,username, function (msg){
+
         res.send(msg)
     })
 })

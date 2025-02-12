@@ -19,6 +19,9 @@ function getCategories(callback) {
 
 
 }
+
+
+
 async function insertInProductTable(sql, values){
     return await new Promise(function (resolve, reject) {
         connection.query(sql, values,function (err, result) {
@@ -232,7 +235,7 @@ function getProduct(productId, callback) {
     parameterizedQueries.alpha_select(['products.*,currencies.*, businesses.businessId, businesses.businessName'],config.STNs.products, "JOIN businesses ON businesses.businessId = products.vendorId JOIN currencies ON currencies.id = products.currency ", {productId: productId},null,null,null,function (sql){
         connection.query(sql, function (err, result){
             if(err) throw err;
-            return callback({success:true, response:result, code:200})
+            return callback({success:true, response:result[0], code:200})
         })
     })
     // genericQueries.select("*",config.STNs.products,"productId",JSON.stringify(productId),function (msg) {
@@ -241,17 +244,47 @@ function getProduct(productId, callback) {
 }
 
 //from vendor
-function getProducts(vendorId,callback){
+function getProducts(vendorId,sortOption,callback){
 
 
     // genericQueries.select("*", config.STNs.products,"vendorId",JSON.stringify(vendorId),function (msg) {
     //     return callback(msg)
     // })
-    var sql = "SELECT * FROM products JOIN categories ON categories.categoryId = products.categoryId WHERE vendorId = "+JSON.stringify(vendorId)+" AND deleted = 0"
-    connection.query(sql,function (err, result) {
+    // const sortOption = req.query.sortOption || "relevance";
+    let orderByClause;
+
+    // Determine the ORDER BY clause based on the selected sort option
+    switch (sortOption) {
+        case "mostRecent":
+            orderByClause = "products.timestamp DESC";
+            break;
+        case "lowestPrice":
+            orderByClause = "products.price ASC";
+            break;
+        case "highestPrice":
+            orderByClause = "products.price DESC";
+            break;
+        case "relevance":
+            orderByClause = "products.timestamp DESC";
+        default:
+            orderByClause = "products.timestamp DESC"; // Replace with your actual relevance logic
+            break;
+    }
+
+    let sql = `
+        SELECT products.*,businesses.businessName
+        FROM products
+                 JOIN categories ON categories.categoryId = products.categoryId JOIN businesses ON businesses.businessId = '${vendorId}'
+        WHERE vendorId = ? AND deleted = 0
+            ${orderByClause === 'relevance' ? '' : `ORDER BY ${orderByClause}`}
+    `;
+
+
+    connection.query(sql, vendorId,function (err, result) {
         if(err){
             throw err;
         }else {
+            console.log(sql,result)
             return callback({success:true,code:200,response:result})
         }
     })
@@ -349,6 +382,9 @@ function getTopProducts(callback){
     })
 
 }
+// function getProduct(productId,callback) {
+//     let sql = `SELECT * FROM products JOIN currencies ON currencies.id = products.currency where`
+// }
 
 function getLatestProductsForCategory(where, callback) {
     parameterizedQueries.alpha_select("*","products",null,where,6,{"GROUP BY":"productId", "ORDER BY": "timestamp"},"DESC",function (sql) {
@@ -395,26 +431,40 @@ function deleteProduct(productId, vendorId, callback) {
         return callback({success:true, code:200, response:res})
     })
 }
-function discover(last_timestamp, callback){
+function discover(page,username, callback){
 
-    var where = (last_timestamp==="00") ? {}:{"timestamp":last_timestamp}
 
-    parameterizedQueries.discover_products(["products.*,currencies.symbol,businesses.businessName, CASE \n" +
-    "        WHEN cart.productId IS NOT NULL THEN 1 \n" +
-    "        ELSE 0 \n" +
-    "    END AS inCart"],"products","JOIN currencies ON currencies.id = products.currency LEFT JOIN cart ON cart.productId=products.productId AND cart.username = '+260970519299' "+sql_business_join,where,6,{"GROUP BY":"products.productId", "ORDER BY": "timestamp"},"DESC", function (sql){
-        connection.query(sql,function (err, result){
 
-            if(err){
-                throw err
+    let sql = `
+        SELECT products.*,
+               currencies.symbol,
+               businesses.businessName,
+               CASE
+                   WHEN cart.productId IS NOT NULL THEN 1
+                   ELSE 0
+                   END AS inCart
+        FROM products
+                 JOIN currencies ON currencies.id = products.currency
+                 LEFT JOIN cart ON cart.productId = products.productId AND cart.username = '${username}'
+                 JOIN businesses ON businesses.businessId = products.vendorId
+        GROUP BY products.productId
+        ORDER BY timestamp DESC
+            LIMIT 10 OFFSET ${(page - 1) * 10}
+    `;
+    console.log(sql)
+    connection.query(sql,function (err, result){
 
-                return callback({success:false,code:500,err:err})
-            }else {
+        if(err){
+            throw err
 
-                return callback({success:true, code:200, response:result})
-            }
-        })
-    })
+            // return callback({success:false,code:500,err:err})
+        }else {
+            console.log(result.length)
+
+            return callback({success:true, hasMore:(result.length === 10),code:200, response:result})
+        }
+
+})
 }
 function getLatestProducts(callback){
 
@@ -429,7 +479,7 @@ function getLatestProducts(callback){
 
                 return callback({success:false,code:500})
             }else {
-                return callback({success:true, code:200, response:result})
+                return callback({success:true, code:200,hasMore:(result.length === 10), response:result})
             }
         })
     })

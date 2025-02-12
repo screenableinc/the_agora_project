@@ -18,6 +18,15 @@ function userExists(username, phoneNumber, emailAddress,callback){
     })
 }
 
+function rateProduct(vendorId,productId, userId, rating, review, callback){
+    let sql = `INSERT INTO product_reviews (vendorId,productId, userId, rating,review_text,created_at, updated_at) VALUES (?)`
+    let values = [[vendorId,productId, userId, rating,  review, Date.now(), Date.now()]];
+
+    connection.query(sql, values,function (err, result) {
+        if (err) throw err;
+        return callback(true)
+    })
+}
 
 function userExists2(username, callback){
     var sql  = "SELECT * from agorans WHERE username = '"+ username +"'"
@@ -58,21 +67,37 @@ function authLogin(identifier,password, callback) {
 }
 
 function followVendor(username, vendorId, callback){
-    var sql = "Insert into user_fav_vendors (vendorId, userId) values ?"
-    connection.query(sql, [vendorId, username], function (err, result){
+    var sql = "Insert into user_fav_vendors (vendorId, userId) values (?)"
+    connection.query(sql, [[vendorId, username]], function (err, result){
         if(err) throw err;
         return callback({success:true, message:null, code:200})
 
     })
 }
+function isFollowing(userId, vendorId, callback){
+    let sql = `SELECT * FROM user_fav_vendors WHERE vendorId = '${vendorId}' and userId = '${userId}'`;
+    connection.query(sql, function (err, result) {
+        if (err) throw err;
+        console.log(result, vendorId, userId)
+        return callback({isFollowing:(result.length !== 0), message:null, code:200})
+    })
 
+}
+function unfollowVendor(userId,vendorId, callback){
+    let sql = `DELETE FROM user_fav_vendors WHERE vendorId = '${vendorId}' AND userId = '${userId}'`;
+    connection.query(sql, function (err, result) {
+        if(err) throw err;
+        return callback({success:true, message:null, code:200})
+    })
+}
 function getVendorsFollowing(username,callback){
-    parameterizedQueries.alpha_select(["vendorId"], "user_fav_vendors", null, {userId: username}, null,null,null, function(sql){
+
+        let sql = `SELECT *, businesses.businessName, businesses.description FROM user_fav_vendors JOIN businesses on businesses.businessId = user_fav_vendors.vendorId where userId = '${username}'`
         connection.query(sql, function (err, result){
             if (err)throw err;
             return callback({code:200, response: result})
         })
-    })
+
 }
 
 function registerUser(userId, countryCode, callback) {
@@ -280,6 +305,7 @@ function store_picture() {
 module.exports = {
     authLogin:authLogin,authJoin:authJoin,deleteItemFromCart:deleteItemFromCart,
     addToCart:addToCart,getCart:getCart, followVendor:followVendor, getVendorsFollowing:getVendorsFollowing, cartCount:cartCount,
-    userExists2:userExists2, register:registerUser, setName:setName,billing_address:billing_address, get_billing_addresses:get_billing_addresses
+    userExists2:userExists2, register:registerUser, setName:setName,billing_address:billing_address, get_billing_addresses:get_billing_addresses,
+    rateProduct:rateProduct,isFollowing:isFollowing, unfollowVendor:unfollowVendor
 }
 

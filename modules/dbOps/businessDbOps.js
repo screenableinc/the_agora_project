@@ -18,16 +18,88 @@ function getBusinessV2 (vendorId,callback) {
     })
 }
 
+function getPaymentMethods(callback) {
+    let sql = `SELECT * FROM paymentoptions`
+    connection.query(sql, function (err, result) {
+        if(err){throw err};
+        return callback({success:true, response:result})
+    })
+}
+
+function followersCount(vendorId, callback) {
+    let sql = `SELECT COUNT(*) AS followers FROM user_fav_vendors WHERE vendorId = '${vendorId}'`;
+    connection.query(sql, function (err, result) {
+        if (err) throw err;
+        return callback({success:true, response:result})
+    })
+}
+
+function reviewsandratings(vendorId, callback) {
+    let sql = `SELECT total_reviews, average_rating FROM businesses where businessId = '${vendorId}'`;
+    connection.query(sql, function (err, result) {
+        if (err) throw err;
+        return callback({success:true, response:result[0]})
+    })
+}
+
+function updateStoreDetails(vendorId, data, callback) {
+    // Extract columns and values from the data object
+    const columns = Object.keys(data);
+    const values = Object.values(data);
+
+    // Create the SET clause dynamically
+    const setClause = columns.map(column => `${column} = ?`).join(', ');
+
+    // Construct the SQL query
+    const sql = `UPDATE businesses SET ${setClause} WHERE businessId = ?`;
+
+    // Add the vendorId to the values array for the WHERE clause
+    values.push(vendorId);
+
+    // Execute the query
+    connection.query(sql, values, function (err, result) {
+        if (err) {
+            console.error('Error updating store details:', err);
+            throw err;
+        }else {
+            return callback({success:true});
+        }
+
+    });
+}
+
+
+
 function getDigitalTransactions(vendorId, callback) {
-    let sql = `SELECT * FROM mobile_money_transactions WHERE payee = '${vendorId}'`
+    let sql = `SELECT DISTINCT * FROM orders JOIN mobile_money_transactions ON mobile_money_transactions.internalTransactionId = orders.transactionId WHERE orders.vendorId = '${vendorId}' AND mobile_money_transactions.status = 1
+                                                                                                                                                        AND mobile_money_transactions.validated = 1`
     connection.query(sql, function (err, result) {
         if(err) {throw err}
-        return callback({success:true, response:result})
+        //
+        // before you return, get payments also;
+
+        let sql = `SELECT * FROM mobile_money_transactions WHERE payee = '${vendorId}' AND status = 1
+                                                             AND validated = 1`;
+        connection.query(sql, function (err, result2) {
+           if(err){throw err}
+           console.log("one",result2.length)
+            console.log("two",result.length)
+            return callback({success:true, response:result.concat(result2)})
+        })
+
     })
 }
 // this functionwas used wjhen building the app for testing to assign all vendors random coordinates
 
-
+function getEmailAndPhone(businessId, callback){
+    let sql = `SELECT email, phoneNumber FROM businesses WHERE businessId = '${businessId}'`
+    connection.query(
+        sql, function (err, result) {
+            if(err) {throw err}
+            return callback({success:true, response:result})
+        }
+    )
+}
 
 function random_coordinates(id,center_lat, center_lng, radius_in_km) {
 
@@ -60,7 +132,7 @@ function location_assign(callback) {
 
         }
         let sql = "INSERT INTO locations (vendorId, lat, lng) VALUES ?";
-        console.log(finalList)
+
         connection.query(sql,[finalList], function(err, results) {
             if (err) {
                 throw err;
@@ -83,11 +155,11 @@ function getBalance(vendorId,callback) {
     connection.query(sqlQuery, function (err, res) {
         if (err) {throw err}
         else{
-            console.log(res.length)
+
             if(res.length===0){
                return callback({"total_balance":0})
             }else {
-                console.log(res[0]["amount"])
+                // console.log(res[0]["amount"])
                 return callback({"total_balance":res[0]["amount"]})
             }
 
@@ -100,14 +172,14 @@ function authLogin(businessId,password,fcm_token, callback) {
     var sql  = "SELECT * from businesses WHERE businessId ='"+ businessId +"' AND password ='"+ password +"'"
     connection.query(sql, function (err, result) {
         if (err){
-            console.log(err)
+            // console.log(err)
             return callback({success:false,response:err, code:500})
         }else {
             if(result.length===0){
                 return callback({success:false, code: 403})
             }else {
                 // success...setFCM token
-                console.log(fcm_token)
+                // console.log(fcm_token)
                 var ret_value = {token_set: false,success: true, code: 100, response: result[0]};
                 if(fcm_token===undefined) {
 
@@ -117,7 +189,7 @@ function authLogin(businessId,password,fcm_token, callback) {
                     var sql = "Update businesses set fcm_token = '"+fcm_token+"' where businessId = "+JSON.stringify(businessId);
                     connection.query(sql, function (err, result) {
                         if (err){
-                            console.log(err)
+                            // console.log(err)
                             return callback(ret_value)
                         }else{
                             ret_value.token_set=true
@@ -202,5 +274,10 @@ module.exports={
     allBusinesses:allBusinesses,
     location_assign:location_assign,
     getDigitalTransactions:getDigitalTransactions,
-    getBusinessV2:getBusinessV2
+    getBusinessV2:getBusinessV2,
+    updateStoreDetails:updateStoreDetails,
+    getEmailAndPhone:getEmailAndPhone,
+    followersCount: followersCount,
+    reviewsandratings:reviewsandratings,
+    getPaymentMethods:getPaymentMethods
 }

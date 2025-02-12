@@ -4,15 +4,42 @@ var config = require("../modules/CONFIG")
 var querystring = require('querystring')
 var genericDb = require('../modules/dbOps/genericQueries')
 var parameterize = require('../modules/dbOps/parameterize')
+var orders = require('../modules/dbOps/ordersDbOp')
 const verify = require("../modules/verify");
 const notify = require("../modules/notify");
+const orderEmailTemplate = require("../modules/orderEmailTemplate");
 const fs = require("fs");
 const businessDb = require("../modules/dbOps/businessDbOps");
 const {getBusinessPendingOrders} = require("../modules/dbOps/ordersDbOp");
 
 router.get('/try', function (req, res, next) {
-    businessDb.getBusinessV2("8CxMTW_DEDDJhn_", function (msg) {
+    // orders.makeOrder("+260970519299",1,0,"hkhjkh","-15.455","28.87776","thy thdsf", function (msg) {
+    //     res.send(msg)
+    // })
+    const os = require('os');
+    const dns = require('dns');
+
+    const hostname = os.hostname();
+
+    dns.lookup(hostname,{family:4}, (err, address) => {
+        if (err) {
+            res.send("failed getting IP")
+        } else {
+            res.send({OriginatingIP :address});
+        }
+    });
+})
+
+router.get('/reviews', function (req, res, next) {
+    businessDb.reviewsandratings(req.query.vendorId, function (msg) {
+        console.log("ssss",msg)
         res.send(msg)
+    })
+})
+
+router.get('/payment_methods',function (req, res, next) {
+    businessDb.getPaymentMethods(function (msg) {
+        res.send(msg);
     })
 })
 

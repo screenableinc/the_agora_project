@@ -193,6 +193,19 @@ router.get('/cart/view', function(req, res, next) {
   // }
 
 });
+
+router.post('/rate', function (req, res, next) {
+    let userId = req.body.userId
+    let rating = req.body.rating
+    let review = req.body.review
+    let productId = req.body.productId
+    let vendorId =req.body.vendorId;
+    userDb.rateProduct(vendorId,productId,userId,rating,review,function (msg) {
+        res.send(msg)
+    })
+
+})
+
 router.get('/cart/items',function (req, res, next) {
     // req.body.userId="iamwise_offici55al"
       userDb.getCart(req.body.userId,function (msg) {
@@ -208,25 +221,41 @@ router.get('/cart', function (req, res, next) {
         res.send(msg)
     })
 })
-router.post('/follow/vendor',function (req, res, next){
+router.get('/follow/vendor',function (req, res, next){
 //  call db function
-    userDb.followVendor(req.body.userId, req.body.vendorId, function (msg){
+    userDb.followVendor(req.body.userId, req.query.vendorId, function (msg){
         res.send(msg)
     })
 })
+router.get('/')
 
 router.post('/follow/user',function (req, res, next){
 //  call db function
 
 })
 
-router.get('/following/users',function (req, res, next){
+router.get('/isfollowing',function (req, res, next){
+    let userId = req.body.userId;
+    let vendorId = req.query.vendorId
+    userDb.isFollowing(userId,vendorId, function (msg) {
+        res.send(msg)
+    })
+})
+
+router.get('/unfollow/vendor',function(req, res, next){
+//     get vendors user is following
+    var username=req.body.userId;
+    let vendorId = req.query.vendorId
+    userDb.unfollowVendor(username,vendorId, function (msg) {
+        res.send (msg)
+    })
 
 })
 
+
 router.get('/following/vendors',function(req, res, next){
 //     get vendors user is following
-    var username=req.query.username;
+    var username=req.body.userId;
     userDb.getVendorsFollowing(username, function (msg) {
         res.send(msg)
     })
@@ -269,82 +298,78 @@ router.post('/checkout',function(req, res, next) {
     }
 
     if(fromCart===true){
-        // this calls a stored procedure that moves from the cartt to the order table
-        ordersDb.makeOrder(userId,paymentMethod,deliveryMethod,txid,lat,lng,string_address, function (msg) {
-            let paymethod=paymentMethod;
-            switch (paymethod) {
-                case 1:
-                    // card
-                    req.body["transactionId"]=txid;
-                    console.log(req.body);
-
-                    notify.cardPay(req.body, function(msg){
-                        res.send(msg)
-                    })
-                    break;
+        // this calls a stored procedure that moves from the cartt to the order table#
 
 
-                case 2:
-                    res.send(msg)
-                    break
-                case 3:
 
-                    notify.pay()
-                    res.send(msg);
-                    break
-                case 4:
-                    res.send(msg)
-                    break
+        ordersDb.makeOrder(number,userId,paymentMethod,deliveryMethod,txid,lat,lng,string_address, function (msg) {
+            //
 
-
-            }
+            res.send(msg)
 
         })
     }else {
-    //     add to orders
 
-        makeOrder2(userId, paymentMethod, req.body.variationId, req.body.productId, 1, req.body.vendorId, location.lat, location.lng,function (msg) {
-            console.log(msg+"__2222");
+
+        makeOrder2(userId, paymentMethod, req.body.variationId, req.body.productId, 1, req.body.vendorId, location.lat, location.lng,txid,function (msg) {
+
             if(msg["success"]){
                 // get device token
                 // call plutus
-                notify.pay(msg["id"], number, function (r) {
 
-                    msg["payment"]=r
-                    res.send(msg)
-                    console.log(msg);
-                })
-                businessDb.getFCMtoken(req.body.vendorId, function (msg) {
-                    if(msg["success"]){
-                        let token = msg["response"]["fcm_token"];
-                        const message = {
-                            notification: {
-                                title: 'Order Received',
-                                body: 'Hello, someone just made an order. Open app to review'
-                            },
-                            android: {
-                                notification: {
-                                    icon: 'stock_ticker_update',
-                                    color: '#7e55c3'
-                                }
-                            },
-                            token: token,
-                        }
-                                getMessaging().send(message)
-                                    .then((response) => {
-                                        // Response is a message ID string.
-                                        console.log('Successfully sent message:', response);
-                                    })
-                                    .catch((error) => {
-                                        // let developer know
-                                        console.log('Error sending message:', error);
-                                    });
+                // todo add not allowed if not allowed method is
+                // set parameters accoring to payment method
 
+                switch (paymentMethod) {
+                    case 1:
+                        break
+                    case 2:
+                        break
+                    case 3:
+                        notify.pay(msg["transactionId"], number, function (r) {
+                            // MTN MOMO
+                            msg["payment"]=r
+                            res.send(msg)
+                            console.log(msg);
+                        })
 
-                    }else {
-                        //     no token...just send message
-                    }
-                })
+                        break;
+                    default:
+                        break;
+
+                }
+
+                // businessDb.getFCMtoken(req.body.vendorId, function (msg) {
+                //     if(msg["success"]){
+                //         let token = msg["response"]["fcm_token"];
+                //         const message = {
+                //             notification: {
+                //                 title: 'Order Received',
+                //                 body: 'Hello, someone just made an order. Open app to review'
+                //             },
+                //             android: {
+                //                 notification: {
+                //                     icon: 'stock_ticker_update',
+                //                     color: '#7e55c3'
+                //                 }
+                //             },
+                //             token: token,
+                //         }
+                //         getMessaging().send(message)
+                //             .then((response) => {
+                //                 // Response is a message ID string.
+                //                 console.log('Successfully sent message:', response);
+                //             })
+                //             .catch((error) => {
+                //                 // let developer know
+                //                 console.log('Error sending message:', error);
+                //             });
+                //
+                //
+                //     }else {
+                //         //     no token...just send message
+                //     }
+                // })
 
 
 
@@ -355,6 +380,10 @@ router.post('/checkout',function(req, res, next) {
             }
 
         })
+
+
+
+        //     add to orders
 
 
     }

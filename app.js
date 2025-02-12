@@ -124,7 +124,7 @@ function validateBusiness(req, res, next){
 
 
     var token = req.headers.token;
-    console.log('token: ', token);
+
 
   jwt.verify(token, req.app.get('secretKey'), function(err, decoded) {
     console.log(err, req.url)

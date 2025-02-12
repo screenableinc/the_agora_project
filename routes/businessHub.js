@@ -94,6 +94,9 @@ router.get('/balance', function (req, res, next) {
         res.send(msg)
     })
 })
+
+
+
 function store(req, callback){
     var productId = req.body.productId;
     var businessId = req.body.businessId
@@ -124,6 +127,19 @@ router.get('/store_details', function(req, res, next){
     })
 
 })
+
+router.post('/store_details', function(req, res, next){
+    let vendorId = req.body.businessId;
+    let data = req.body
+    delete data.type
+    delete data.businessId
+    businessDb.updateStoreDetails(vendorId, data, function (msg) {
+        res.send(msg)
+    })
+
+    // res.send("wait")
+
+})
 router.get('/details', function (req, res, next) {
     var vendorId = req.body.vendorId;
 
@@ -132,6 +148,7 @@ router.get('/transactions', function (req, res, next) {
     var vendorId = req.body.businessId
     // con(vendorId)
     businessDb.getDigitalTransactions(vendorId, function (ret) {
+        console.log("here..", ret["response"].length)
         res.send(ret)
     })
 
@@ -189,6 +206,29 @@ router.get("/",function (req, res, next) {
 
 })
 
+router.post('/orders/respond',function (req, res, next) {
+//    send message that order has been seen and accepted
+//    todo:remember to alter quantities
+    let vendorName = req.body.vendorName;
+    let productName = req.body.productName;
+    let variation = req.body.variation;
+    let username = req.body.username;
+    let response = req.body.response;
+    console.log(response+"£££££");
+
+    // get order and make sure and check the payment type to correclty approve
+
+    //get the order id approve order and notify user
+    ordersDb.respondToOrder(req.body.orderId,vendorName,productName,variation, username,response,function (msg) {
+        //notify user
+
+        res.send(msg)
+    })
+
+
+
+
+})
 
 router.get('/orders/all',validateBusiness,function (req, res, next) {
     try {
@@ -208,7 +248,7 @@ router.get('/settings',validateBusiness, function (req, res,next) {
 })
 router.get("/products",validateBusiness,function (req, res,next) {
     var businessId = req.query.businessId
-    productsDb.getProducts(businessId,function (msg) {
+    productsDb.getProducts(businessId,"relevance",function (msg) {
         res.send(msg)
     })
 })
@@ -264,13 +304,14 @@ router.get('/products/all',validateBusiness,function (req, res, next) {
 
 
 
-    productsDb.getProducts(req.body.businessId, function (r) {
+    productsDb.getProducts(req.body.businessId,"relevance", function (r) {
         // also get pending orders
         getBusinessPendingOrders(req.body.businessId, function (msg) {
 
             r["pendingOrders"] = msg["response"][0]["pendingOrders"]
+            r["followers"] = msg["response"][0]["followers"]
             r["sales"] = msg["response"][0]["successfulOrders"]
-            console.log(msg)
+
             res.send(r)
         })
 
@@ -331,6 +372,8 @@ router.post('/additem',uploadItemImage.any("file"),validateBusiness,function (re
     })
 
 })
+
+
 
 router.post('/login', validateBusiness,function (req, res, next) {
     var businessId = req.body.businessId

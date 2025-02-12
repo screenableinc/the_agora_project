@@ -5,10 +5,10 @@ let https = require('https');
 let axios = require('axios');
 let deployed = require('../modules/CONFIG');
 const querystring = require("node:querystring");
-const senderAddress = "vendnbuy@vendnbuy.com"
+const senderAddress = "orders@vendnbuy.com"
 const host='business158.web-hosting.com'
 const port=465
-const password = 'pvDRuHT{Z7%2'
+const password = '*V1;7qm&VXRw'
 let bulkSMSkey = "2eeca676d357a7313a58fbb075d41431"
 let bulkSMSlink = "https://bulksms.zamtel.co.zm/api/v2.1/action/send/api_key/:api_key/contacts/:contacts/"
 //pass phone number of agoran or email, order total, productname,variation, vendor name
@@ -56,17 +56,18 @@ function sendCode(phone,code, callback){
     }
 }
 
-function payToMobile(orderId, number, callback){
+function payToMobile(transactionId, number, callback){
 //     call plutus
     const data = {
         MSISDN: number,
-        transactionId: orderId
+        transactionId: transactionId
     }
     axios.post("http://127.0.0.1:5000/api/pay/mtn", data).then((res)=>{
         return callback(res.data)
 
     }).catch((err)=>{
         // log err
+        console.log(err)
         return callback({"success":false, code: 501})
     })
 
@@ -169,17 +170,47 @@ function sendMail(email,html, subject, callback) {
 
     transporter.sendMail(mailOptions, function (err, info) {
         if(err){
+            console.log(err)
 
             return callback({success:false,error:err})}
         else
+            console.log("done")
             callback({success:true, msg:info});
+
     });
+
+}
+
+
+
+
+function price(price) {
+    price=String(parseFloat(String(price)).toFixed(2))
+    var decimals = price.substr(price.length-3)
+    price=price.slice(0, -3);
+    if(price.length >= 4){
+        var textLeft = price
+        var final=""
+        while (textLeft.length>3){
+
+            final = "," +textLeft.substr(textLeft.length-3)+final
+            textLeft = textLeft.slice(0, -3);
+
+
+        }
+        return textLeft+final+decimals
+
+    }else {
+        return price+decimals
+    }
 }
 
 module.exports = {
     orderRespond:orderRespond,
     sendCode:sendCode,
     pay:payToMobile,
-    cardPay:cardPay
+    cardPay:cardPay,
+    sendMail:sendMail,
+    price:price,
 
 }

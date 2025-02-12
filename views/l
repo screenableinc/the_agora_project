@@ -1,0 +1,35 @@
+gen PerEarDum = (personal_earnings > 40000)
+tab perEarDum
+tab pereardum
+tab PerEarDum
+gen PerEarDum = (personal_earnings > 40000 & !missing(personal_earnings))
+drop PerEarDum
+gen PerEarDum = (personal_earnings > 40000 & !missing(personal_earnings))
+replace PerEarDum = . in 6
+replace PerEarDum = . in 7
+replace PerEarDum = . in 36
+tab PerEarDum
+bysort PerEarDum: summarize life_expectancy
+ttest life_expectancy, by(PerEarDum)
+ci life_expectancy, by(PerEarDum)
+regress personal_earnings years_in_education
+regress life_expectancy personal_earnings
+outlier
+drop in 39/51
+scatter obs life_expectancy
+scatter life_expectancy obs
+scatter personal_earnings obs
+scatter life_expectancy obs
+scatter years_in_education obs
+graph box years_in_education
+graph box life_expectancy
+graph box personal earnings
+graph box personal_earnings
+drop obs
+regress life_expectancy personal_earnings if years_in_education > 19 & years_in_education < 16
+regress life_expectancy personal_earnings if years_in_education < 19 & years_in_education > 16
+gen log_life_expectancy = log(life_expectancy)
+gen log_personal_earnings = log(personal_earnings)
+gen log_years_in_education = log(years_in_education)
+regress life_expectancy log_personal_earnings
+regress log_life_expectancy log_personal_earnings
