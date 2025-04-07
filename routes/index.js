@@ -7,27 +7,42 @@ var parameterize = require('../modules/dbOps/parameterize')
 var orders = require('../modules/dbOps/ordersDbOp')
 const verify = require("../modules/verify");
 const notify = require("../modules/notify");
+const {getMessaging}=require('firebase-admin/messaging')
 const orderEmailTemplate = require("../modules/orderEmailTemplate");
 const fs = require("fs");
 const businessDb = require("../modules/dbOps/businessDbOps");
 const {getBusinessPendingOrders} = require("../modules/dbOps/ordersDbOp");
 
 router.get('/try', function (req, res, next) {
-    // orders.makeOrder("+260970519299",1,0,"hkhjkh","-15.455","28.87776","thy thdsf", function (msg) {
-    //     res.send(msg)
-    // })
-    const os = require('os');
-    const dns = require('dns');
+    // test push notifications
+    let token = "fkJUd7-8TUyiRTJfJ1zZCq:APA91bGugv6zKGpJkgnPIglOU7tYFOlSxgDTn3ZT8VJt2QtHbGZmQZrEdbnRH9L16c0m8HP6i244tla5S1crxr-l_adyWN-JzGjd3g5qfwh3wAUXOccPmk__PXWndAaX90ttigB36iJ6";
+    token = "fOKSR8UJf0QmoHGn3wZKVp:APA91bEb43GdnmmjSpTfGXaHBWlNiHbopwq6XRtgk0RgadZC-TGEKWC4MXzmFeIrVNZvIU4OfvUuxPb57ghmor7HF8rUJx4Kgpg4BVe59ntFw9lPxoAymqg"
+    console.log(token)
+    const message = {
+                notification: {
+                    title: 'Order Received',
+                    body: 'Hello, someone just made an order buddy. Open app to review'
+                },
+                android: {
+                    notification: {
+                        icon: 'stock_ticker_update',
+                        color: '#7e55c3'
+                    }
+                },
+                token: token,
+            }
+            getMessaging().send(message)
+                .then((response) => {
+                    // Response is a message ID string.
+                    console.log('Successfully sent message:', response);
+                })
+                .catch((error) => {
+                    // let developer know
+                    console.log('Error sending message:', error);
+                });
 
-    const hostname = os.hostname();
+res.send("okay")
 
-    dns.lookup(hostname,{family:4}, (err, address) => {
-        if (err) {
-            res.send("failed getting IP")
-        } else {
-            res.send({OriginatingIP :address});
-        }
-    });
 })
 
 router.get('/reviews', function (req, res, next) {

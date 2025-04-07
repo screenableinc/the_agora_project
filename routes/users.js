@@ -275,6 +275,16 @@ router.post('/cart/add',function (req, res, n) {
       })
 
 })
+router.post('/cart/update/quantity',function (req, res, next) {
+    let userId = req.body.userId;
+    let quantity = req.body.quantity;
+    let productId = req.body.productId;
+    let variationId = req.body.variationId;
+    ordersDb.update_cart_quantity(userId,quantity, variationId, productId,function (msg) {
+        res.send(msg);
+    })
+
+})
 
 router.post('/checkout',function(req, res, next) {
     let fromCart = req.body.fromCart;

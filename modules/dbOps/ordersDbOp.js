@@ -94,6 +94,44 @@ function getOrders(vendorId, callback) {
     })
 }
 
+function update_cart_quantity(userId, quantity,variationId, productId, callback) {
+    let sql = `UPDATE cart SET qty = ${quantity} WHERE productId = '${productId}' AND username = '${userId}' AND variationId = '${variationId}'`;
+    connection.query(sql,function (err, result) {
+        if(err){throw err};
+        return callback({success:true, code:200, response:result})
+    })
+}
+
+function updateLiability(vendorId,byAmount,callback) {
+    let sql = `SELECT * FROM liabilities WHERE vendorId = '${vendorId}'`
+    connection.query(sql, function (err, result) {
+        if(err){throw err};
+        // might need to be more specific
+        if(result.length===0){
+            //     create liability entry
+            sql = `INSERT INTO liabilities (vendorId,amount,last_updated) ?`
+            connection.query(sql, function (err, result) {
+                if(err){throw err};
+                return callback({success:true, response:result})
+            })
+
+
+
+        }else {
+            let current_amount = result[0]['amount']+byAmount
+
+            sql = `UPDATE liabilities SET amount =${current_amount},last_updated = ${new Date().getTime()} WHERE vendorId = '${vendorId}'`
+            connection.query(sql, function (err, result) {
+                if(err){throw err};
+                return callback({success:true, response:result})
+            })
+        }
+
+        return callback({success:true, response:result})
+
+    })
+}
+
 function respondToOrder(orderId,vendorName,productName, variation,username, response, callback) {
     let sql = "UPDATE orders SET status = "+ response +" WHERE orderId = "+orderId
     connection.query(sql, function (err, result) {
@@ -186,7 +224,7 @@ function makeOrder(number,username, paymentOption,delivery,txid,lat,lng,string_a
                             return callback({success:true, code:200, response:res})
                         }).catch((error)=>{
                             // put cart items back in cart
-                            console.log("called");
+
                             console.log(res)
                             const valuesList = res.map(row => Object.values(row));
 
@@ -267,8 +305,8 @@ function makeOrder2(username, paymentOption,variationId,productId,qty, vendorId,
     })
 }
 function getUserOrders(userId, callback) {
-    let sql = "SELECT orders.*,(SELECT GROUP_CONCAT(v.variantName,': ',v.value) from variations v WHERE v.variationId = orders.variationId) as v_descr, products.productName, products.price, businesses.businessName  from orders JOIN products ON products.productId = orders.productId JOIN businesses ON businesses.businessId = orders.vendorId where userId = "+userId + " ORDER BY timestamp DESC";
-    console.log(sql)
+    let sql = "SELECT orders.*,(SELECT name from paymentoptions p WHERE p.optionId = orders.payment_option) as payment_method,(SELECT GROUP_CONCAT(v.variantName,': ',v.value) from variations v WHERE v.variationId = orders.variationId) as v_descr, products.productName, products.price, businesses.businessName  from orders JOIN products ON products.productId = orders.productId JOIN businesses ON businesses.businessId = orders.vendorId where userId = "+userId + " ORDER BY timestamp DESC";
+
     connection.query(sql, function (err, result) {
 
         if(err){
@@ -286,5 +324,6 @@ module.exports={
     respondToOrder: respondToOrder,
     getBusinessPendingOrders:getBusinessPendingOrders,
     getUserOrders:getUserOrders,
-    makeOrder2:makeOrder2
+    makeOrder2:makeOrder2,
+    update_cart_quantity:update_cart_quantity,
 }

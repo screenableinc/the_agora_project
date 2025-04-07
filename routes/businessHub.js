@@ -274,6 +274,8 @@ router.post("/phoneverify", function (req, res, next){
     })
 
 })
+
+
 router.get('')
 
 router.post("/join", validateBusiness,function (req, res, next) {
@@ -299,6 +301,13 @@ router.post("/join", validateBusiness,function (req, res, next) {
         }
     })
 
+})
+
+
+router.post('/fcm_token',validateBusiness,function (req, res, next) {
+    businessDb.updateFCM(req.body.businessId, req.body.token, function (msg) {
+        res.send(msg)
+    })
 })
 router.get('/products/all',validateBusiness,function (req, res, next) {
 

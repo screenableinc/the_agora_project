@@ -18,6 +18,18 @@ function getBusinessV2 (vendorId,callback) {
     })
 }
 
+
+function updateFCM(businessId, token, callback){
+    let sql = `UPDATE businesses SET fcm_token = '${token}' WHERE businessId = '${businessId}'`;
+    connection.query(sql, function (err, result) {
+        if (err){
+            throw err
+        };
+        return callback({success:true})
+    })
+}
+
+
 function getPaymentMethods(callback) {
     let sql = `SELECT * FROM paymentoptions`
     connection.query(sql, function (err, result) {
@@ -279,5 +291,6 @@ module.exports={
     getEmailAndPhone:getEmailAndPhone,
     followersCount: followersCount,
     reviewsandratings:reviewsandratings,
-    getPaymentMethods:getPaymentMethods
+    getPaymentMethods:getPaymentMethods,
+    updateFCM:updateFCM
 }
